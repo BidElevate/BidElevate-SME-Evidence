@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mobilisation Dates | BidElevate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
+<style>
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --ink:#1f2b27; --muted:#5b6964; --line:#d6dfda;
+  --brand:#3e554f; --brand-ink:#ffffff; --brand-soft:#e3ebe7; --field:#ffffff; --field-line:#b7c4bf;
+  --danger:#a2432f; --danger-soft:#f7e3dd; --warn:#8a5a00; --warn-soft:#fbf0d9; --ok:#2f6b4f; --ok-soft:#e1f0e6;
+  --display:"Lora",Georgia,serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141a18; --surface:#1c2421; --ink:#e6ece9; --muted:#9caaa4; --line:#2f3b37;
+  --brand:#8fb3a6; --brand-ink:#10201a; --brand-soft:#24332e; --field:#151c1a; --field-line:#3c4a45;
+  --danger:#ec8f7a; --danger-soft:#3a221d; --warn:#e6c278; --warn-soft:#352b17; --ok:#8fcfaa; --ok-soft:#1d3127; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding:0 16px}
+main{max-width:680px;margin:0 auto;padding:20px 0 56px;display:grid;gap:16px}
+.brandbar{font-family:var(--display);color:var(--brand);font-size:1.2rem}
+h1{font-family:var(--display);font-size:1.5rem;line-height:1.25;margin:2px 0 4px;text-wrap:balance}
+h2{font-family:var(--display);font-size:1.15rem;margin:0 0 10px}
+p{margin:0 0 8px}
+p:last-child{margin-bottom:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.banner{border-radius:8px;padding:10px 12px;font-size:.95rem}
+.banner.due{background:var(--danger-soft);color:var(--danger);font-weight:600}
+.banner.ok{background:var(--ok-soft);color:var(--ok)}
+.banner.error{background:var(--danger-soft);color:var(--danger)}
+.act{padding:14px 0;border-top:1px solid var(--line);display:grid;gap:8px}
+.act:first-child{border-top:0;padding-top:0}
+.act .name{font-weight:600;display:flex;gap:8px}
+.act .name .n{color:var(--brand);font-variant-numeric:tabular-nums;min-width:22px}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dates label,label.sub{display:grid;gap:4px;font-size:.85rem;font-weight:500;color:var(--muted)}
+.act textarea{min-height:60px}
+.act .two{gap:10px}
+.note{font-size:.85rem;border-radius:6px;padding:6px 10px}
+.confirm{font-size:.9rem;padding:6px 8px;border-radius:6px;background:var(--brand-soft)}
+.confirm.bad{background:var(--danger-soft);color:var(--danger)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.err{background:var(--danger-soft);color:var(--danger)}
+.field{display:grid;gap:5px;margin-bottom:12px}
+label.lab{font-weight:600;font-size:.92rem}
+.opt{font-weight:400;color:var(--muted);font-size:.82rem}
+input[type=text],input[type=date],textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:9px 11px;min-height:44px}
+textarea{resize:vertical;min-height:80px}
+input.bad,textarea.bad{border-color:var(--danger);background:var(--danger-soft)}
+input:focus,textarea:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:1px;border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:.95rem}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--brand);flex:none}
+.btn{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);padding:10px 18px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn[disabled]{opacity:.5;cursor:default}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--brand);text-decoration:underline;cursor:pointer}
+details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:.95rem}
+details ol{margin:8px 0 0;padding-left:20px;font-size:.92rem}
+.saved{font-size:.82rem;color:var(--muted)}
+footer{color:var(--muted);font-size:.8rem;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"><div class="brandbar">BidElevate</div></main>
+<input type="file" id="draftfile" accept=".json,application/json" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+/* Settings: put the EmailJS template ID in below. The recipient is set in the EmailJS template. */
+const SETTINGS = {
+  EMAILJS_PUBLIC_KEY: 'ZxayBeLVQRYJoLquJ',
+  EMAILJS_SERVICE_ID: 'service_yf3sg5y',
+  EMAILJS_TEMPLATE_ID: 'template_kkuyqjr'
+};
+
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const app = $('app');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmt = v => { if (!isDate(v)) return ''; const [y,m,d] = v.split('-'); return (+d) + ' ' + M[+m-1] + ' ' + y; };
+  const store = {
+    get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+    set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e) { return false; } }
+  };
+
+  // ---------- read the link ----------
+  let C = null;
+  const m = location.search.match(/[?&]d=([^&#]+)/);
+  try { C = m && JSON.parse(LZString.decompressFromEncodedURIComponent(m[1])); } catch(e) {}
+  if (!C || !Array.isArray(C.a) || !C.a.length) {
+    app.insertAdjacentHTML('beforeend', '<section><h1>This link isn\'t complete</h1><p>Please open the link from your email again, making sure you copy all of it.</p></section>');
+    return;
+  }
+
+  // Key ties saved answers to this exact form (client + tender + activities)
+  const KEY = 'be_mob2_' + LZString.compressToBase64(C.c + '|' + C.t + '|' + C.a.map(a => a.n).join('|')).slice(0, 60);
+  const PRE = C.a.map(a => !!(a.s || a.e));
+  let A = C.a.map(a => ({ s: a.s || '', e: a.e || '', c: false, on:'', ot:'', cm:'' }));
+  let F = { name:'', title:'' };
+  let sentRef = null;
+  const saved = store.get(KEY);
+  if (saved && Array.isArray(saved.A) && saved.A.length === A.length) {
+    A = saved.A.map(x => ({ s: isDate(x.s) ? x.s : '', e: isDate(x.e) ? x.e : '', c: !!x.c, on: (typeof x.on === 'string' ? x.on : ''), ot: (typeof x.ot === 'string' ? x.ot : ''), cm: (typeof x.cm === 'string' ? x.cm : '') }));
+    F = Object.assign(F, saved.F || {});
+    sentRef = saved.sentRef || null;
+  }
+  let saveTimer;
+  function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (store.set(KEY, { A, F, sentRef, at: new Date().toISOString() })) $('savedat').textContent = 'Saved on this device'; }, 300); }
+
+  // ---------- page ----------
+  document.title = 'Mobilisation dates – ' + C.t + ' | BidElevate';
+  app.insertAdjacentHTML('beforeend', `
+    <section>
+      <p class="muted small" style="margin:0">Mobilisation dates</p>
+      <h1>${esc(C.t)}</h1>
+      <p class="muted" style="margin:0">${esc(C.c)}${C.g ? ' · Contract starts ' + esc(fmt(C.g)) : ''}</p>
+      ${C.d ? `<div class="banner due" style="margin-top:12px">Please send this back by ${esc(fmt(C.d))}</div>` : ''}
+    </section>
+    <div id="formview" style="display:grid;gap:16px">
+      <section>
+        <p style="margin-bottom:14px">For each activity, add the start and finish dates and who is responsible for it. Where we have suggested dates, please check them: change them if they aren't right, or tick to confirm them.</p>
+        <div id="acts"></div>
+      </section>
+      <section>
+        <h2>Who is sending this?</h2>
+        <div class="two">
+          <div class="field"><label class="lab" for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
+          <div class="field"><label class="lab" for="title">Your job title</label><input type="text" id="title" autocomplete="organization-title"></div>
+        </div>
+        <label class="chk"><input type="checkbox" id="ok"> I confirm these dates are realistic for our organisation.</label>
+        <div id="err" class="banner error" hidden style="margin-top:12px"></div>
+        <button class="btn" type="button" id="send" style="width:100%;margin-top:14px">Send dates to BidElevate</button>
+        <p class="saved" id="savedat" style="margin-top:8px"></p>
+      </section>
+      <section>
+        <details>
+          <summary>Need a colleague to finish it?</summary>
+          <ol>
+            <li>Tap <button class="linkbtn" type="button" id="dl">Download my answers</button>. This saves a small file.</li>
+            <li>Email that file <strong>and</strong> this link to your colleague.</li>
+            <li>They open the link and tap <button class="linkbtn" type="button" id="imp">Load answers from a file</button>.</li>
+          </ol>
+          <p class="muted small" style="margin-top:8px">Forwarding the link on its own sends a blank form. Your answers are saved only on this device until you download them.</p>
+        </details>
+      </section>
+    </div>
+    <div id="doneview" hidden></div>
+    <footer>BidElevate Ltd · bidelevate.co.uk</footer>`);
+
+  function renderActs(){
+    const box = $('acts'); box.innerHTML = '';
+    C.a.forEach((a, i) => {
+      const row = document.createElement('div'); row.className = 'act';
+      row.innerHTML = `<div class="name"><span class="n">${i+1}.</span><span>${esc(a.n)}</span></div>
+        <div class="dates">
+          <label>Start<input type="date" id="s${i}"></label>
+          <label>Finish<input type="date" id="e${i}"></label>
+        </div>
+        ${PRE[i] ? `<label class="chk confirm" id="cl${i}"><input type="checkbox" id="c${i}"> These dates are right</label>` : ''}
+        <div class="two">
+          <label class="sub">Responsible person<input type="text" id="on${i}" autocomplete="off" placeholder="e.g. John Smith"></label>
+          <label class="sub">Their job title<input type="text" id="ot${i}" autocomplete="off" placeholder="e.g. Registered Manager"></label>
+        </div>
+        <label class="sub">Comments <span class="opt">(optional)</span><textarea id="cm${i}" maxlength="600" rows="2"></textarea></label>
+        <div class="note" id="w${i}" hidden></div>`;
+      box.appendChild(row);
+      const s = row.querySelector('#s'+i), e = row.querySelector('#e'+i);
+      s.value = A[i].s; e.value = A[i].e;
+      const cb = row.querySelector('#c'+i);
+      if (cb) { cb.checked = A[i].c; cb.onchange = () => { A[i].c = cb.checked; $('cl'+i).classList.remove('bad'); save(); }; }
+      const upd = () => {
+        A[i].s = s.value; A[i].e = e.value; s.classList.remove('bad'); e.classList.remove('bad');
+        if (cb && (s.value !== (C.a[i].s||'') || e.value !== (C.a[i].e||''))) { A[i].c = true; cb.checked = true; $('cl'+i).classList.remove('bad'); }
+        check(i); save();
+      };
+      ['on','ot','cm'].forEach(f => { const el = row.querySelector('#'+f+i); el.value = A[i][f]; el.addEventListener('input', () => { A[i][f] = el.value; el.classList.remove('bad'); save(); }); });
+      s.addEventListener('input', upd); s.addEventListener('change', upd);
+      e.addEventListener('input', upd); e.addEventListener('change', upd);
+      check(i);
+    });
+  }
+  function check(i){
+    const w = $('w'+i), x = A[i];
+    if (x.s && x.e && x.s > x.e) { w.className = 'note err'; w.textContent = 'The finish date is before the start date.'; w.hidden = false; return; }
+    if (C.g && x.e && x.e > C.g) { w.className = 'note warn'; w.textContent = 'This finishes after the contract starts (' + fmt(C.g) + '). If that is right, tell us why in the comments.'; w.hidden = false; return; }
+    w.hidden = true;
+  }
+  renderActs();
+  ['name','title'].forEach(id => { $(id).value = F[id] || ''; $(id).addEventListener('input', () => { F[id] = $(id).value; save(); }); });
+
+  // ---------- colleague handover ----------
+  function saveFile(text, name){
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+    a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  $('dl').onclick = () => {
+    saveFile(JSON.stringify({ type:'bidelevate-mobilisation-dates', key: KEY, client: C.c, tender: C.t, savedAt: new Date().toISOString(), A }, null, 1),
+             ('Mobilisation-dates-' + C.c).replace(/[^\w-]+/g,'-').slice(0,60) + '.json');
+  };
+  $('imp').onclick = () => $('draftfile').click();
+  $('draftfile').onchange = () => {
+    const f = $('draftfile').files[0]; $('draftfile').value = ''; if (!f) return;
+    f.text().then(t => {
+      let d; try { d = JSON.parse(t); } catch(e) {}
+      if (!d || d.type !== 'bidelevate-mobilisation-dates' || !Array.isArray(d.A)) { alert("That isn't an answers file from this form."); return; }
+      if (d.key !== KEY || d.A.length !== A.length) { alert('That file is for a different form' + (d.tender ? ' (' + d.tender + ')' : '') + '. Please check you have the right file and link.'); return; }
+      const has = A.some((x, i) => x.on || x.ot || x.cm || x.s !== (C.a[i].s||'') || x.e !== (C.a[i].e||''));
+      if (has && !confirm('Replace the answers on this screen with the ones in the file?')) return;
+      A = d.A.map(x => ({ s: isDate(x.s) ? x.s : '', e: isDate(x.e) ? x.e : '', c: !!x.c, on: (typeof x.on === 'string' ? x.on : ''), ot: (typeof x.ot === 'string' ? x.ot : ''), cm: (typeof x.cm === 'string' ? x.cm : '') }));
+      renderActs(); save();
+      const b = document.createElement('div'); b.className = 'banner ok'; b.textContent = 'Answers loaded. Carry on from where they stopped.';
+      $('formview').prepend(b); b.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(() => b.remove(), 6000);
+    });
+  };
+
+  // ---------- send ----------
+  function newRef(){
+    const d = new Date(), p = n => String(n).padStart(2,'0'), ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let r = ''; crypto.getRandomValues(new Uint32Array(4)).forEach(x => r += ch[x % ch.length]);
+    return 'MOB-' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '-' + r;
+  }
+  function srcOf(i){ if (!PRE[i]) return 'Added by client'; return (A[i].s === (C.a[i].s||'') && A[i].e === (C.a[i].e||'')) ? 'Confirmed BidElevate suggestion' : 'Changed by client'; }
+  function buildEmail(ref, at){
+    const data = {
+      reference: ref, submitted_at: at, client: C.c, tender: C.t, contract_go_live: C.g || null,
+      completed_by: { name: F.name.trim(), job_title: F.title.trim() },
+      activities: C.a.map((a, i) => ({ order: i+1, activity: a.n, start: A[i].s, finish: A[i].e, responsible_person: { name: A[i].on.trim(), job_title: A[i].ot.trim() }, comments: A[i].cm.trim() || null, client_action: srcOf(i), finishes_after_go_live: !!(C.g && A[i].e > C.g) }))
+    };
+    const td = 'padding:6px 8px;border:1px solid #d6dfda;font-size:13px;vertical-align:top';
+    const th = td + ';background:#e3ebe7;text-align:left';
+    const rows = data.activities.map(a => `<tr><td style="${td}">${a.order}</td><td style="${td}">${esc(a.activity)}</td><td style="${td};white-space:nowrap">${esc(fmt(a.start))}</td><td style="${td};white-space:nowrap">${esc(fmt(a.finish))}${a.finishes_after_go_live ? ' <strong style="color:#a2432f">(after go-live)</strong>' : ''}</td><td style="${td}">${esc(a.responsible_person.name)}<br><span style="color:#5b6964">${esc(a.responsible_person.job_title)}</span></td><td style="${td};white-space:pre-wrap">${esc(a.comments || '')}</td><td style="${td}">${esc(a.client_action)}</td></tr>`).join('');
+    const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2b27;max-width:760px">
+      <h2 style="font-family:Georgia,serif;color:#3e554f;margin:0 0 6px">${esc(C.c)} – ${esc(C.t)}</h2>
+      <p style="font-size:13px;margin:0 0 12px">Completed by <strong>${esc(data.completed_by.name)}</strong>, ${esc(data.completed_by.job_title)} · ${esc(new Date(at).toLocaleString('en-GB',{timeZone:'Europe/London',dateStyle:'medium',timeStyle:'short'}))} · Ref ${esc(ref)}${C.g ? ' · Go-live ' + esc(fmt(C.g)) : ''}</p>
+      <table style="border-collapse:collapse;width:100%"><tr><th style="${th}">#</th><th style="${th}">Activity</th><th style="${th}">Start</th><th style="${th}">Finish</th><th style="${th}">Responsible</th><th style="${th}">Comments</th><th style="${th}">Client</th></tr>${rows}</table>
+      <p style="font-size:12px;color:#5b6964;margin:14px 0 4px">For ChatGPT (dates are YYYY-MM-DD):</p>
+      <pre style="font-family:Consolas,Menlo,monospace;font-size:11px;white-space:pre-wrap;background:#f3f6f4;border:1px solid #d6dfda;padding:10px;margin:0">${esc(JSON.stringify(data, null, 1))}</pre></div>`;
+    return { data, html };
+  }
+  function splitHtml(html){
+    const i = html.indexOf('<p style="font-size:12px;color:#5b6964;margin:14px 0 4px">');
+    const head = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2b27;max-width:760px">';
+    return [html.slice(0, i) + '<p style="font-size:12px;color:#5b6964">The ChatGPT data follows in a second email.</p></div>', head + html.slice(i)];
+  }
+  let sending = false;
+  $('send').onclick = async () => {
+    if (sending) return;
+    const errs = [];
+    A.forEach((x, i) => {
+      if (!x.s) { $('s'+i).classList.add('bad'); }
+      if (!x.e) { $('e'+i).classList.add('bad'); }
+      if (!x.on.trim()) { $('on'+i).classList.add('bad'); }
+      if (!x.ot.trim()) { $('ot'+i).classList.add('bad'); }
+    });
+    const noPerson = A.filter(x => !x.on.trim() || !x.ot.trim()).length;
+    if (noPerson) errs.push(noPerson + (noPerson === 1 ? ' activity needs' : ' activities need') + " a responsible person's name and job title.");
+    A.forEach((x, i) => { if (PRE[i] && !x.c && x.s && x.e) $('cl'+i).classList.add('bad'); });
+    const unconf = A.filter((x, i) => PRE[i] && !x.c && x.s && x.e).length;
+    if (unconf) errs.push(unconf + (unconf === 1 ? ' suggested date needs' : ' suggested dates need') + ' checking: tick "These dates are right" or change the dates.');
+    const missing = A.filter(x => !x.s || !x.e).length;
+    if (missing) errs.push(missing + (missing === 1 ? ' activity needs' : ' activities need') + ' a start and finish date.');
+    if (A.some(x => x.s && x.e && x.s > x.e)) errs.push('One or more finish dates are before the start date.');
+    if (!F.name.trim()) errs.push('Add your name.');
+    if (!F.title.trim()) errs.push('Add your job title.');
+    if (!$('ok').checked) errs.push('Tick the box to confirm the dates.');
+    const err = $('err');
+    if (errs.length) {
+      err.innerHTML = errs.map(esc).join('<br>'); err.hidden = false;
+      const first = document.querySelector('input.bad, textarea.bad, .confirm.bad'); if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    err.hidden = true;
+    sending = true; $('send').disabled = true; $('send').textContent = 'Sending…';
+    const at = new Date().toISOString(), ref = sentRef && sentRef.pending ? sentRef.ref : newRef();
+    sentRef = sentRef && sentRef.pending ? sentRef : { ref, pending: true }; store.set(KEY, { A, F, sentRef, at });
+    const { data, html } = buildEmail(ref, at);
+    try {
+      if (!window.emailjs) throw new Error('The email service did not load. Check your internet connection.');
+      if (!/^template_[A-Za-z0-9]+$/.test(SETTINGS.EMAILJS_TEMPLATE_ID)) throw new Error('This form is not finished being set up. Please tell BidElevate.');
+      emailjs.init({ publicKey: SETTINGS.EMAILJS_PUBLIC_KEY });
+      // EmailJS caps each send at 50KB. A very long form goes as two emails (table, then the ChatGPT data) with the same reference.
+      const subj = 'Mobilisation dates – ' + C.c + ' – ' + C.t + ' – ' + ref;
+      const parts = new TextEncoder().encode(html).length > 45000 ? splitHtml(html) : [html];
+      sentRef.parts = sentRef.parts || parts.map(() => false);
+      for (let p = 0; p < parts.length; p++) {
+        if (sentRef.parts[p]) continue;
+        const res = await emailjs.send(SETTINGS.EMAILJS_SERVICE_ID, SETTINGS.EMAILJS_TEMPLATE_ID, {
+          subject: subj + (parts.length > 1 ? ' (' + (p+1) + ' of ' + parts.length + ')' : ''),
+          submission_ref: ref, client_name: C.c, tender_title: C.t, content_html: parts[p]
+        });
+        if (!res || res.status !== 200) throw new Error('The email service replied with an error.');
+        sentRef.parts[p] = true; store.set(KEY, { A, F, sentRef, at });
+        if (p < parts.length - 1) await new Promise(r => setTimeout(r, 1200));
+      }
+      sentRef = { ref, pending: false, at }; store.set(KEY, { A, F, sentRef, at });
+      done(ref);
+    } catch(e) {
+      err.innerHTML = 'Your dates have not been sent yet. ' + esc((e && (e.text || e.message)) || '') + '<br>Your answers are saved on this device. Please check your connection and tap Send again.';
+      err.hidden = false;
+      $('send').disabled = false; $('send').textContent = 'Send dates to BidElevate';
+    }
+    sending = false;
+  };
+  function done(ref){
+    $('formview').hidden = true;
+    const v = $('doneview'); v.hidden = false;
+    v.innerHTML = `<section style="text-align:center"><h2>Thank you. Your dates have been sent.</h2>
+      <p>BidElevate will use them to build your mobilisation plan and will send it to you to check.</p>
+      <p class="muted small">Reference ${esc(ref)}</p>
+      <button class="linkbtn small" type="button" id="again">Need to change something? Edit and send again</button></section>`;
+    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; sentRef = null; save(); window.scrollTo({top:0}); };
+    window.scrollTo({ top:0 });
+  }
+  if (sentRef && !sentRef.pending) done(sentRef.ref);
+})();
+</script>
+</body>
+</html>
