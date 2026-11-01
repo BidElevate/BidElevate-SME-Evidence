@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>SME Evidence | BidElevate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
+<script>
+  // =====================================================================
+  // SETTINGS: the only lines you need to change
+  // =====================================================================
+  const CONFIG = {
+    EMAILJS_PUBLIC_KEY: "ZxayBeLVQRYJoLquJ",
+    EMAILJS_SERVICE_ID: "service_yf3sg5y",
+    EMAILJS_TEMPLATE_ID: "template_0xmo3em",      // SME Evidence template
+    NOTIFY_EMAIL: "hello@bidelevate.co.uk"        // where answers are sent
+  };
+</script>
+<style>
+:root{
+  --bg:#f5f7f4; --surface:#ffffff; --ink:#1f2b27; --muted:#5d6b66; --line:#dbe2dd;
+  --brand:#3e554f; --brand-dark:#2c3e39; --brand-soft:#e3ebe7;
+  --red:#b42318; --red-soft:#fdecea; --ok:#2f6b4f; --ok-soft:#e3f1e8;
+  --display:"Lora",Georgia,serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:780px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+[hidden]{display:none!important}
+
+.deadline{border:2px solid var(--red);background:var(--red-soft);color:var(--red);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.deadline small{display:block;font-size:.78rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase}
+.deadline strong{display:block;font-family:var(--display);font-size:1.35rem;line-height:1.3}
+.meta{font-size:.92rem;color:var(--muted);margin:0 0 18px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.meta b{color:var(--ink);font-weight:600}
+
+.q{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.q.done{border-left-color:var(--brand)}
+.q.missing{border-left-color:var(--red)}
+.q label{display:block;font-weight:600;margin-bottom:10px;white-space:pre-wrap}
+.q label span{display:block;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+textarea{width:100%;min-height:130px;resize:vertical;font:inherit;color:var(--ink);background:#fff;border:1px solid #b9c5c1;border-radius:8px;padding:10px 12px}
+.q.missing textarea{border-color:var(--red)}
+textarea:focus,button:focus-visible{outline:3px solid rgba(62,85,79,.35);outline-offset:1px;border-color:var(--brand)}
+.err{color:var(--red);font-size:.88rem;font-weight:600;margin-top:6px}
+
+.bar{position:sticky;bottom:0;background:rgba(245,247,244,.96);border-top:1px solid var(--line);margin:0 calc(-1 * max(16px,env(safe-area-inset-left)));padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.status{font-size:.88rem;color:var(--muted)}
+.btn{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:11px 20px;min-height:44px;cursor:pointer}
+.btn:hover{background:var(--brand-dark)}
+.btn[disabled]{opacity:.55;cursor:wait}
+.btn.light{background:#fff;color:var(--brand)}
+
+.notice{border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.95rem}
+.notice.error{background:var(--red-soft);color:var(--red);border:1px solid #f1c4bf}
+.notice ul{margin:6px 0 0;padding-left:20px}
+.notice a{color:var(--red);font-weight:600}
+
+.done-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:14px}
+.done-card h1{font-family:var(--display);color:var(--brand-dark);font-size:1.4rem;margin:0 0 6px}
+.done-card p{margin:0 0 14px;color:var(--muted)}
+.qa{border-top:1px solid var(--line);padding:12px 0}
+.qa:first-child{border-top:0}
+.qa b{display:block;margin-bottom:6px;white-space:pre-wrap}
+.qa div{white-space:pre-wrap;background:var(--brand-soft);border-radius:8px;padding:10px 12px}
+.foot{padding:28px 0 20px;text-align:center;font-size:.8rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div id="bad" class="notice error" hidden>This link isn't complete. Please open the full link from our email.</div>
+
+  <div id="form-view" hidden>
+    <div class="deadline"><small>Please submit by</small><strong id="ev-deadline"></strong></div>
+    <p class="meta"><span><b id="client"></b></span><span id="tender"></span><span>Tender deadline: <b id="td-deadline"></b></span></p>
+
+    <div id="missing" class="notice error" hidden tabindex="-1" role="alert"></div>
+    <form id="form" novalidate>
+      <div id="questions"></div>
+      <div id="send-error" class="notice error" hidden role="alert"></div>
+      <div class="bar">
+        <span class="status" id="status"></span>
+        <button class="btn" type="submit" id="submit">Submit answers</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="done-view" hidden>
+    <div class="done-card">
+      <h1>Answers submitted</h1>
+      <p id="done-when"></p>
+      <button class="btn" type="button" id="download">Download a copy</button>
+    </div>
+    <div class="done-card" id="done-answers"></div>
+  </div>
+
+  <p class="foot">BidElevate Ltd</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const blank = s => !s || !String(s).trim();
+
+  function fmt(iso){
+    const d = new Date(iso); if (isNaN(d)) return '';
+    const day = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(d);
+    const t = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hour:'numeric',minute:'2-digit',hour12:true}).format(d).replace(/\s/g,'').toLowerCase();
+    return day + ' at ' + t;
+  }
+
+  // ---------- read the link ----------
+  const raw = new URLSearchParams(location.search).get('d') || '';
+  let F = null;
+  try { F = JSON.parse(LZString.decompressFromEncodedURIComponent(raw)); } catch(e) {}
+  if (!F || !Array.isArray(F.q) || !F.q.length) { $('bad').hidden = false; return; }
+
+  // One storage slot per link, on this device
+  let h = 0; for (let i = 0; i < raw.length; i++) h = (h * 31 + raw.charCodeAt(i)) | 0;
+  const KEY = 'be_sme_' + (h >>> 0).toString(36);
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e){ return {}; } }
+  function store(o){ try { localStorage.setItem(KEY, JSON.stringify(o)); return true; } catch(e){ return false; } }
+
+  const saved = load();
+  const answers = Array.isArray(saved.a) ? saved.a.slice(0, F.q.length) : [];
+  while (answers.length < F.q.length) answers.push('');
+
+  document.title = 'SME Evidence | ' + F.c + ' | BidElevate';
+
+  if (saved.sentAt) { showDone(saved.sentAt); return; }
+
+  // ---------- form ----------
+  $('ev-deadline').textContent = fmt(F.e);
+  $('client').textContent = F.c;
+  $('tender').textContent = F.t;
+  $('td-deadline').textContent = fmt(F.d);
+
+  $('questions').innerHTML = F.q.map((q,i) => `
+    <div class="q" id="q${i}">
+      <label for="a${i}"><span>Question ${i+1} of ${F.q.length}</span>${esc(q)}</label>
+      <textarea id="a${i}" data-i="${i}" required></textarea>
+      <div class="err" id="e${i}" hidden>Please answer this question.</div>
+    </div>`).join('');
+
+  F.q.forEach((_,i) => {
+    const ta = $('a'+i);
+    ta.value = answers[i];
+    mark(i);
+    ta.addEventListener('input', () => {
+      answers[i] = ta.value;
+      mark(i);
+      clearTimeout(window._t);
+      window._t = setTimeout(save, 600);
+      if (!$('missing').hidden) { const m = missingList(); m.length ? showMissing(m) : ($('missing').hidden = true); }
+    });
+  });
+  $('form-view').hidden = false;
+  status();
+
+  function mark(i){
+    const ok = !blank(answers[i]);
+    $('q'+i).classList.toggle('done', ok);
+    if (ok) { $('q'+i).classList.remove('missing'); $('e'+i).hidden = true; }
+  }
+  function missingList(){ return answers.map((a,i) => blank(a) ? i : -1).filter(i => i >= 0); }
+  function status(text){
+    const n = F.q.length - missingList().length;
+    $('status').textContent = text || (n + ' of ' + F.q.length + ' answered');
+  }
+  function save(){
+    const ok = store({ a: answers });
+    status((F.q.length - missingList().length) + ' of ' + F.q.length + ' answered' + (ok ? ' · saved' : ''));
+  }
+
+  function showMissing(m){
+    const box = $('missing');
+    box.innerHTML = '<strong>' + (m.length === 1 ? '1 question needs' : m.length + ' questions need') + ' an answer.</strong> If a question doesn\'t apply, please explain why.<ul>' +
+      m.map(i => `<li><a href="#q${i}" data-i="${i}">Question ${i+1}</a></li>`).join('') + '</ul>';
+    box.hidden = false;
+    box.querySelectorAll('a').forEach(a => a.onclick = e => {
+      e.preventDefault();
+      const ta = $('a' + a.dataset.i);
+      ta.scrollIntoView({behavior:'smooth', block:'center'});
+      setTimeout(() => ta.focus({preventScroll:true}), 350);
+    });
+  }
+
+  // ---------- submit ----------
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('send-error').hidden = true;
+    const m = missingList();
+    if (m.length) {
+      m.forEach(i => { $('q'+i).classList.add('missing'); $('e'+i).hidden = false; });
+      showMissing(m);
+      $('missing').scrollIntoView({behavior:'smooth', block:'start'});
+      $('missing').focus({preventScroll:true});
+      return;
+    }
+    const btn = $('submit');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    save();
+    const sentAt = new Date().toISOString();
+    try {
+      const res = await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
+        to_email: CONFIG.NOTIFY_EMAIL,
+        client_name: F.c,
+        tender_title: F.t,
+        submitted_at: fmt(sentAt),
+        evidence_deadline: fmt(F.e),
+        tender_deadline: fmt(F.d),
+        question_count: String(F.q.length),
+        qa_html: emailQa()
+      }, { publicKey: CONFIG.EMAILJS_PUBLIC_KEY });
+      if (!res || res.status !== 200) throw new Error('Unexpected response');
+    } catch(err) {
+      console.error(err);
+      btn.disabled = false; btn.textContent = 'Submit answers';
+      const box = $('send-error');
+      box.textContent = 'Your answers have not been sent. Please check your internet connection and press Submit again. Your answers are still here.';
+      box.hidden = false;
+      box.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    // Only confirm once the email has actually gone
+    store({ a: answers, sentAt });
+    showDone(sentAt);
+  });
+
+  function emailQa(){
+    return F.q.map((q,i) => `
+<div style="border-top:1px solid #dbe2dd;padding:14px 0;">
+<div style="font-size:12px;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#5d6b66;">Question ${i+1}</div>
+<div style="font-family:Georgia,serif;font-size:16px;font-weight:bold;color:#2c3e39;margin:4px 0 8px;white-space:pre-wrap;">${esc(q)}</div>
+<div style="background:#e3ebe7;border-radius:8px;padding:12px 14px;white-space:pre-wrap;color:#1f2b27;">${esc(answers[i])}</div>
+</div>`).join('');
+  }
+
+  // ---------- confirmation + download ----------
+  function showDone(sentAt){
+    $('form-view').hidden = true;
+    $('done-when').textContent = F.t + ' · sent ' + fmt(sentAt);
+    $('done-answers').innerHTML = F.q.map((q,i) =>
+      `<div class="qa"><b>${i+1}. ${esc(q)}</b><div>${esc(answers[i])}</div></div>`).join('');
+    $('download').onclick = () => download(sentAt);
+    $('done-view').hidden = false;
+    window.scrollTo(0,0);
+  }
+
+  function download(sentAt){
+    const doc = `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SME evidence - ${esc(F.c)}</title>
+<style>body{font-family:Arial,sans-serif;color:#1f2b27;line-height:1.55;max-width:760px;margin:0 auto;padding:24px}
+h1{font-family:Georgia,serif;color:#3e554f;font-size:22px;margin:0 0 12px}table{border-collapse:collapse;margin-bottom:20px}
+td{padding:3px 14px 3px 0;vertical-align:top}td:first-child{color:#5d6b66}.qa{border-top:1px solid #dbe2dd;padding:14px 0;break-inside:avoid}
+.qa b{display:block;white-space:pre-wrap;margin-bottom:8px}.qa div{white-space:pre-wrap;background:#e3ebe7;border-radius:8px;padding:10px 12px}</style></head><body>
+<h1>SME evidence responses</h1>
+<table><tr><td>Client</td><td><b>${esc(F.c)}</b></td></tr><tr><td>Tender</td><td><b>${esc(F.t)}</b></td></tr>
+<tr><td>Submitted</td><td>${esc(fmt(sentAt))}</td></tr></table>
+${F.q.map((q,i)=>`<div class="qa"><b>Question ${i+1}: ${esc(q)}</b><div>${esc(answers[i])}</div></div>`).join('')}
+<p style="color:#5d6b66;font-size:12px;margin-top:24px">BidElevate Ltd</p></body></html>`;
+    const url = URL.createObjectURL(new Blob([doc], {type:'text/html;charset=utf-8'}));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = ('SME-evidence-' + F.c + '-' + F.t).replace(/[^a-z0-9]+/gi,'-').slice(0,90) + '.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+})();
+</script>
+</body>
+</html>
