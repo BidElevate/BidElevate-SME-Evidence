@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Social value commitments | BidElevate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
+<style>
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --ink:#1f2b27; --muted:#5b6964; --line:#d6dfda;
+  --brand:#3e554f; --brand-ink:#ffffff; --brand-soft:#e3ebe7; --field:#ffffff; --field-line:#b7c4bf;
+  --danger:#a2432f; --danger-soft:#f7e3dd;
+  --display:"Lora",Georgia,serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141a18; --surface:#1c2421; --ink:#e6ece9; --muted:#9caaa4; --line:#2f3b37;
+  --brand:#8fb3a6; --brand-ink:#10201a; --brand-soft:#24332e; --field:#151c1a; --field-line:#3c4a45;
+  --danger:#ec8f7a; --danger-soft:#3a221d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a18; --surface:#1c2421; --ink:#e6ece9; --muted:#9caaa4; --line:#2f3b37;
+  --brand:#8fb3a6; --brand-ink:#10201a; --brand-soft:#24332e; --field:#151c1a; --field-line:#3c4a45;
+  --danger:#ec8f7a; --danger-soft:#3a221d; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:680px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
+.brandbar{font-family:var(--display);font-weight:600;color:var(--brand);font-size:1.15rem}
+h1{font-family:var(--display);font-size:1.5rem;margin:4px 0 6px;text-wrap:balance}
+h2{font-family:var(--display);font-size:1.15rem;margin:0 0 10px}
+p{margin:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.banner{border-radius:8px;padding:10px 12px;font-weight:600}
+.banner.due{background:var(--danger-soft);color:var(--danger)}
+.banner.error{background:var(--danger-soft);color:var(--danger);font-weight:500}
+.banner.error ul{margin:4px 0 0;padding-left:18px}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.lab,label.lab{font-weight:600;font-size:.95rem}
+.opt{color:var(--muted);font-weight:400;font-size:.88rem}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:9px 11px;min-height:44px}
+textarea{resize:vertical;min-height:80px}
+input.bad,textarea.bad{border-color:var(--danger);background:var(--danger-soft)}
+input:focus,textarea:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:1px;border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:.95rem}
+.chk input{width:20px;height:20px;min-height:0;margin-top:2px;accent-color:var(--brand);flex:none}
+.btn{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);padding:10px 18px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.btn[disabled]{opacity:.5;cursor:default}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--brand);text-decoration:underline;cursor:pointer}
+details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:.95rem}
+details ol{margin:8px 0 0;padding-left:20px;font-size:.92rem}
+.saved{font-size:.82rem;color:var(--muted)}
+
+/* Commitment cards */
+.cnum{font-size:.85rem;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.years{width:100%;border-collapse:collapse;font-size:.95rem;margin-top:2px}
+.years th,.years td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.years th{font-size:.82rem;color:var(--muted);font-weight:600}
+.years td.q{width:110px}
+.years input{padding:6px 8px;text-align:right;min-height:40px;font-variant-numeric:tabular-nums}
+.years tr.total td{font-weight:700;border-bottom:0}
+.years tr.total td.q{text-align:right;padding-right:17px;font-variant-numeric:tabular-nums}
+.part{font-size:.8rem;color:var(--muted);display:block}
+.confirm{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft)}
+.confirm.bad{background:var(--danger-soft);color:var(--danger)}
+footer{color:var(--muted);font-size:.8rem;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"><div class="brandbar">BidElevate</div></main>
+<input type="file" id="draftfile" accept=".json,application/json" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+/* Settings. Uses its own EmailJS template (Social Value Form).
+   The recipient (hello@bidelevate.co.uk) is set in the EmailJS template. */
+const SETTINGS = {
+  EMAILJS_PUBLIC_KEY: 'ZxayBeLVQRYJoLquJ',
+  EMAILJS_SERVICE_ID: 'service_yf3sg5y',
+  EMAILJS_TEMPLATE_ID: 'template_fxnvy5r'
+};
+
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const app = $('app');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmt = v => { if (!isDate(v)) return ''; const [y,m,d] = v.split('-'); return (+d) + ' ' + MON[+m-1] + ' ' + y; };
+  const fmtStamp = iso => new Date(iso).toLocaleString('en-GB', { timeZone:'Europe/London', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const store = {
+    get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+    set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e) { return false; } }
+  };
+
+  /* ---------- contract years: counted from the contract start date, last one may be a part year ---------- */
+  const iso = d => d.toISOString().slice(0,10);
+  const parts = v => v.split('-').map(Number);
+  function addYears(v, n){ const [y,m,d] = parts(v); const last = new Date(Date.UTC(y+n, m, 0)).getUTCDate(); return iso(new Date(Date.UTC(y+n, m-1, Math.min(d, last)))); }
+  function addDays(v, n){ const [y,m,d] = parts(v); return iso(new Date(Date.UTC(y, m-1, d+n))); }
+  const my = v => { const [y,m] = parts(v); return MON[m-1] + ' ' + y; };
+  function contractYears(s, e){
+    if (!isDate(s) || !isDate(e) || e < s) return [];
+    const out = [];
+    for (let k = 0; k < 25; k++){
+      const ys = addYears(s, k); if (ys > e) break;
+      let ye = addDays(addYears(s, k+1), -1), partial = false;
+      if (ye > e) { ye = e; partial = true; }
+      const days = (Date.parse(ye) - Date.parse(ys)) / 864e5 + 1;
+      out.push({ s: ys, e: ye, partial, months: Math.max(1, Math.round(days / 30.44)) });
+    }
+    return out;
+  }
+  const yearLabel = (y, i) => 'Year ' + (i+1) + ' (' + my(y.s) + ' – ' + my(y.e) + ')';
+  const num = v => (v === '' || v == null || !isFinite(+v)) ? null : +v;
+  const fmtNum = n => (Math.round(n*100)/100).toLocaleString('en-GB');
+
+  /* ---------- read the link ---------- */
+  let C = null;
+  const m = location.search.match(/[?&]d=([^&#]+)/);
+  try { C = m && JSON.parse(LZString.decompressFromEncodedURIComponent(m[1])); } catch(e) {}
+  const Y = C ? contractYears(C.s, C.e) : [];
+  if (!C || !Array.isArray(C.a) || !C.a.length || !Y.length) {
+    app.insertAdjacentHTML('beforeend', '<section><h1>This link isn\'t complete</h1><p>Please open the link from your email again, making sure you copy all of it.</p></section>');
+    return;
+  }
+
+  const FIELDS = ['n','u','st','p','r','ev'];
+  const LABELS = { n:'Commitment', u:'Unit', q:'Yearly figures', st:'Start date', p:'Delivery period', r:'Responsible person', ev:'Evidence' };
+  const orig = C.a.map(a => {
+    const o = {}; FIELDS.forEach(f => o[f] = a[f] || '');
+    o.q = Y.map((_, k) => (a.q && a.q[k] !== '' && a.q[k] != null) ? String(a.q[k]) : '');
+    return o;
+  });
+
+  // Key ties saved answers to this exact form
+  const KEY = 'be_sv1_' + LZString.compressToBase64(C.c + '|' + C.t + '|' + C.s + '|' + C.e + '|' + C.a.map(a => a.n).join('|')).slice(0, 60);
+  let A = orig.map(o => Object.assign({}, o, { q: o.q.slice(), ok: false }));
+  let F = { name:'', title:'', notes:'' };
+  let sentRef = null;
+  function cleanA(list){
+    if (!Array.isArray(list) || list.length !== A.length) return null;
+    return list.map(x => { const o = {}; FIELDS.forEach(f => o[f] = typeof x[f] === 'string' ? x[f] : ''); if (!isDate(o.st)) o.st = '';
+      o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.ok = !!x.ok; return o; });
+  }
+  const saved = store.get(KEY);
+  if (saved) { const a = cleanA(saved.A); if (a) { A = a; F = Object.assign(F, saved.F || {}); sentRef = saved.sentRef || null; } }
+  let saveTimer;
+  function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (store.set(KEY, { A, F, sentRef, at: new Date().toISOString() })) $('savedat').textContent = 'Saved on this device'; }, 300); }
+
+  /* ---------- page ---------- */
+  document.title = 'Social value commitments – ' + C.t + ' | BidElevate';
+  const contractLine = 'Contract ' + fmt(C.s) + ' to ' + fmt(C.e) + (C.aw ? ' · Expected award ' + fmt(C.aw) : '');
+  app.insertAdjacentHTML('beforeend', `
+    <section>
+      <p class="muted small">Social value commitments</p>
+      <h1>${esc(C.t)}</h1>
+      <p class="muted">${esc(C.c)}</p>
+      <p class="muted small" style="margin-top:2px">${esc(contractLine)}</p>
+      ${C.d ? `<div class="banner due" style="margin-top:12px">Please send this back by ${esc(fmt(C.d))}</div>` : ''}
+    </section>
+    <div id="formview" style="display:grid;gap:16px">
+      <section>
+        <p>These are the extra benefits your organisation would offer the local community through this contract, such as placements, volunteering or local jobs. We have suggested some, with figures for each contract year.</p>
+        <p style="margin-top:10px">Please check each one carefully and change anything that isn't realistic for you. Then tick to confirm it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
+      </section>
+      <div id="acts" style="display:grid;gap:16px"></div>
+      <section>
+        <div class="field"><label class="lab" for="notes">Anything we should know? <span class="opt">(optional)</span></label><textarea id="notes" placeholder="For example, another commitment you'd like to offer, or something you aren't sure about"></textarea></div>
+        <div class="two">
+          <div class="field"><label class="lab" for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
+          <div class="field"><label class="lab" for="title">Your job title</label><input type="text" id="title" autocomplete="organization-title"></div>
+        </div>
+        <label class="chk" id="okl"><input type="checkbox" id="ok"> I confirm these commitments and yearly figures are realistic and agreed by our organisation.</label>
+        <div id="err" class="banner error" hidden style="margin-top:12px"></div>
+        <button class="btn" type="button" id="send" style="width:100%;margin-top:14px">Send commitments to BidElevate</button>
+        <p class="saved" id="savedat" style="margin-top:8px"></p>
+      </section>
+      <section>
+        <details>
+          <summary>Need a colleague to finish it?</summary>
+          <ol>
+            <li>Tap <button class="linkbtn" type="button" id="dl">Download my answers</button>. This saves a small file.</li>
+            <li>Email that file <strong>and</strong> this link to your colleague.</li>
+            <li>They open the link and tap <button class="linkbtn" type="button" id="imp">Load answers from a file</button>.</li>
+          </ol>
+          <p class="muted small" style="margin-top:8px">Forwarding the link on its own sends a form with only our suggestions in it.</p>
+        </details>
+      </section>
+      <footer>BidElevate Ltd · hello@bidelevate.co.uk</footer>
+    </div>
+    <div id="doneview" hidden></div>`);
+
+  function renderActs(){
+    const wrap = $('acts'); wrap.innerHTML = '';
+    A.forEach((a, i) => {
+      const sec = document.createElement('section');
+      sec.id = 'card' + i;
+      sec.innerHTML = `
+        <div class="cnum">Commitment ${i+1} of ${A.length}</div>
+        <div class="field"><label class="lab" for="n${i}">What will you do?</label><textarea id="n${i}" data-f="n" style="min-height:60px"></textarea></div>
+        <div class="field"><label class="lab" for="u${i}">What is being counted?</label><input type="text" id="u${i}" data-f="u" placeholder="For example, student placements or volunteering hours"></div>
+        <div class="field">
+          <span class="lab">How many each contract year?</span>
+          <table class="years"><thead><tr><th>Contract year</th><th style="text-align:right" data-unit></th></tr></thead><tbody>
+            ${Y.map((y, k) => `<tr><td>${esc(yearLabel(y,k))}${y.partial ? `<span class="part">Part year: about ${y.months} month${y.months===1?'':'s'}</span>` : ''}</td>
+              <td class="q"><input type="number" min="0" step="any" inputmode="decimal" id="q${i}_${k}" data-k="${k}" aria-label="${esc(yearLabel(y,k))}"></td></tr>`).join('')}
+            <tr class="total"><td>Total over the contract</td><td class="q" data-total></td></tr>
+          </tbody></table>
+          <p class="muted small">Put 0 for any year with nothing planned.</p>
+        </div>
+        <div class="two">
+          <div class="field"><label class="lab" for="st${i}">When will it start?</label><input type="date" id="st${i}" data-f="st"></div>
+          <div class="field"><label class="lab" for="p${i}">How often or over what period?</label><input type="text" id="p${i}" data-f="p" placeholder="For example, each academic year"></div>
+        </div>
+        <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label><input type="text" id="r${i}" data-f="r" placeholder="Name and job title"></div>
+        <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
+        <label class="chk confirm" id="cl${i}"><input type="checkbox" id="c${i}"> I have checked this commitment, including the figure for each year.</label>`;
+      const unitHead = sec.querySelector('[data-unit]');
+      const setUnit = () => { unitHead.textContent = a.u.trim() ? a.u.trim().slice(0, 30) : 'Number'; };
+      sec.querySelectorAll('[data-f]').forEach(inp => {
+        const f = inp.dataset.f; inp.value = a[f];
+        inp.addEventListener('input', () => { a[f] = inp.value; inp.classList.remove('bad'); if (f === 'u') setUnit(); save(); });
+      });
+      setUnit();
+      const tot = sec.querySelector('[data-total]');
+      const sum = () => { let t = 0, any = false; a.q.forEach(v => { const n = num(v); if (n != null) { t += n; any = true; } }); tot.textContent = any ? fmtNum(t) : '–'; };
+      sec.querySelectorAll('[data-k]').forEach(inp => {
+        const k = +inp.dataset.k; inp.value = a.q[k];
+        inp.addEventListener('input', () => { a.q[k] = inp.value; inp.classList.remove('bad'); sum(); save(); });
+      });
+      sum();
+      const cb = sec.querySelector('#c'+i);
+      cb.checked = a.ok;
+      cb.onchange = () => { a.ok = cb.checked; $('cl'+i).classList.remove('bad'); save(); };
+      wrap.appendChild(sec);
+    });
+  }
+  renderActs();
+  ['notes','name','title'].forEach(id => { $(id).value = F[id] || ''; $(id).addEventListener('input', () => { F[id] = $(id).value; $(id).classList.remove('bad'); save(); }); });
+  $('ok').onchange = () => $('okl').classList.remove('bad');
+
+  /* ---------- colleague handover ---------- */
+  $('dl').onclick = () => {
+    const blob = new Blob([JSON.stringify({ form: KEY, A, F, at: new Date().toISOString() }, null, 1)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'social-value-answers-' + (C.c || 'client').replace(/[^a-z0-9]+/gi,'-').toLowerCase() + '.json';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  };
+  $('imp').onclick = () => $('draftfile').click();
+  $('draftfile').onchange = e => {
+    const file = e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    file.text().then(t => {
+      let d = null; try { d = JSON.parse(t); } catch(x) {}
+      const a = d && d.form === KEY ? cleanA(d.A) : null;
+      if (!a) { alert("That file doesn't match this form. Please check it came from the same link."); return; }
+      A = a; F = Object.assign({ name:'', title:'', notes:'' }, d.F || {});
+      renderActs(); ['notes','name','title'].forEach(id => $(id).value = F[id] || '');
+      save(); alert('Answers loaded.');
+    });
+  };
+
+  /* ---------- checks ---------- */
+  function validate(){
+    const errs = []; let first = null;
+    const mark = el => { el.classList.add('bad'); if (!first) first = el; };
+    const missingCards = [], unticked = [];
+    A.forEach((a, i) => {
+      let miss = false;
+      FIELDS.forEach(f => { if (!String(a[f]).trim()) { mark($(f+i)); miss = true; } });
+      a.q.forEach((v, k) => { const n = num(v); if (n == null || n < 0) { mark($('q'+i+'_'+k)); miss = true; } });
+      if (miss) missingCards.push(i+1);
+      if (!a.ok) { mark($('cl'+i)); unticked.push(i+1); }
+    });
+    if (missingCards.length) errs.push('Please fill in every box, including a figure (0 or more) for each year, in commitment ' + missingCards.join(', ') + '.');
+    if (unticked.length) errs.push('Please check and tick commitment ' + unticked.join(', ') + '.');
+    if (!F.name.trim()) { mark($('name')); errs.push('Add your name.'); }
+    if (!F.title.trim()) { mark($('title')); errs.push('Add your job title.'); }
+    if (!$('ok').checked) { mark($('okl')); errs.push('Tick the confirmation at the bottom.'); }
+    return { errs, first };
+  }
+
+  /* ---------- email ---------- */
+  const newRef = () => 'SV-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  const total = a => a.q.reduce((t, v) => t + (num(v) || 0), 0);
+  function status(i){
+    const a = A[i], o = orig[i], changed = [], added = [];
+    FIELDS.concat('q').forEach(f => {
+      const was = f === 'q' ? o.q.join('|') : o[f].trim(), now = f === 'q' ? a.q.map(v => String(num(v))).join('|') : a[f].trim();
+      const wasNorm = f === 'q' ? o.q.map(v => v === '' ? '' : String(num(v))).join('|') : was;
+      const blank = f === 'q' ? o.q.every(v => v === '') : !was;
+      if (blank) { added.push(LABELS[f]); return; }
+      if (wasNorm !== now) changed.push(LABELS[f]);
+    });
+    return { changed, added, label: changed.length ? 'Changed by client: ' + changed.join(', ') : (added.length ? 'Confirmed (client filled in the blanks)' : 'Confirmed as suggested') };
+  }
+  function buildEmail(ref, at){
+    const S = A.map((_, i) => status(i));
+    const data = {
+      reference: ref, submitted_at: at, client: C.c, tender: C.t,
+      anticipated_award: C.aw || '', contract_start: C.s, contract_end: C.e,
+      contract_years: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, part_year: y.partial })),
+      commitments: A.map((a, i) => ({
+        order: i+1, commitment: a.n.trim(), unit: a.u.trim(),
+        yearly: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, quantity: num(a.q[k]) })),
+        total: total(a), start_date: a.st, delivery_period: a.p.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
+        client_checked: true, status: S[i].label, filled_in_by_client: S[i].added
+      })),
+      notes: F.notes.trim(), confirmed_by: { name: F.name.trim(), job_title: F.title.trim() },
+      confirmation: 'I confirm these commitments and yearly figures are realistic and agreed by our organisation.'
+    };
+    const td = 'style="border:1px solid #d6dfda;padding:6px 8px;vertical-align:top;font-size:13px"';
+    const th = 'style="border:1px solid #d6dfda;padding:6px 8px;background:#e3ebe7;text-align:left;font-size:12px;vertical-align:bottom"';
+    const tdn = 'style="border:1px solid #d6dfda;padding:6px 8px;vertical-align:top;font-size:13px;text-align:right"';
+    let h = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2b27;max-width:1100px">';
+    h += '<h2 style="font-family:Georgia,serif;color:#3e554f;margin:0 0 6px">Social value commitments confirmed</h2>';
+    h += '<p style="margin:0 0 4px"><strong>' + esc(C.c) + '</strong> – ' + esc(C.t) + '</p>';
+    h += '<p style="margin:0 0 4px;font-size:13px">Contract ' + esc(fmt(C.s)) + ' to ' + esc(fmt(C.e)) + (C.aw ? ' · Expected award ' + esc(fmt(C.aw)) : '') + '</p>';
+    h += '<p style="margin:0 0 14px;font-size:13px">Confirmed by ' + esc(F.name.trim()) + ', ' + esc(F.title.trim()) + ' · ' + esc(fmtStamp(at)) + ' · Ref ' + esc(ref) + '</p>';
+    // Transfer table: one row per commitment, a column per contract year
+    h += '<h3 style="font-size:15px;margin:0 0 6px">Commitments and yearly figures</h3>';
+    h += '<table style="border-collapse:collapse;width:100%"><tr><th ' + th + '>#</th><th ' + th + '>Commitment</th><th ' + th + '>Unit</th>';
+    Y.forEach((y, k) => { h += '<th ' + th + '>Year ' + (k+1) + '<br><span style="font-weight:normal">' + esc(my(y.s)) + ' – ' + esc(my(y.e)) + (y.partial ? ' (part)' : '') + '</span></th>'; });
+    h += '<th ' + th + '>Total</th><th ' + th + '>Start</th><th ' + th + '>Delivery period</th><th ' + th + '>Responsible</th><th ' + th + '>Evidence</th><th ' + th + '>Status</th></tr>';
+    A.forEach((a, i) => {
+      h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '>' + esc(a.u.trim()) + '</td>';
+      a.q.forEach(v => { h += '<td ' + tdn + '>' + esc(fmtNum(num(v))) + '</td>'; });
+      h += '<td ' + tdn + '><strong>' + esc(fmtNum(total(a))) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
+      const st = S[i];
+      h += '<td ' + td + '>' + (st.changed.length ? '<strong style="color:#a2432f">' + esc(st.label) + '</strong>' : esc(st.label)) + (st.added.length ? '<br><span style="color:#5b6964">Filled in by client: ' + esc(st.added.join(', ')) + '</span>' : '') + '</td></tr>';
+    });
+    h += '</table>';
+    if (F.notes.trim()) h += '<h3 style="font-size:15px;margin:16px 0 6px">Client notes</h3><p style="margin:0;font-size:14px;white-space:pre-wrap">' + esc(F.notes.trim()) + '</p>';
+    h += '<p style="margin:16px 0 0;font-size:13px;background:#e3ebe7;padding:8px 10px;border-radius:6px">Each commitment was individually ticked as checked, and ' + esc(F.name.trim()) + ' confirmed: “' + esc(data.confirmation) + '”</p>';
+    const jsonPart = '<p style="font-size:12px;color:#5b6964;margin:14px 0 4px">Structured data (for ChatGPT or a spreadsheet):</p><pre style="font-size:11px;white-space:pre-wrap;background:#f3f6f4;padding:8px;border-radius:6px">' + esc(JSON.stringify(data, null, 1)) + '</pre>';
+    return { data, main: h + '</div>', json: '<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2b27">' + jsonPart + '</div>', both: h + jsonPart + '</div>' };
+  }
+
+  let sending = false;
+  $('send').onclick = async () => {
+    if (sending) return;
+    const err = $('err');
+    document.querySelectorAll('.bad').forEach(el => el.classList.remove('bad'));
+    const { errs, first } = validate();
+    if (errs.length) {
+      err.innerHTML = '<strong>Before sending:</strong><ul>' + errs.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul>';
+      err.hidden = false;
+      if (first) { first.scrollIntoView({ behavior:'smooth', block:'center' }); if (first.focus && first.tagName !== 'LABEL') setTimeout(() => first.focus({ preventScroll:true }), 400); }
+      return;
+    }
+    err.hidden = true; sending = true;
+    $('send').disabled = true; $('send').textContent = 'Sending…';
+    const at = new Date().toISOString();
+    const ref = sentRef && sentRef.pending ? sentRef.ref : newRef();
+    sentRef = sentRef && sentRef.pending ? sentRef : { ref, pending: true };
+    store.set(KEY, { A, F, sentRef, at });
+    const E = buildEmail(ref, at);
+    // EmailJS caps each send at 50KB. A very long form goes as two emails with the same reference.
+    const subj = 'Social value commitments – ' + C.c + ' – ' + C.t + ' – ' + ref;
+    const parts = new TextEncoder().encode(E.both).length > 45000 ? [E.main + '<p style="font-size:12px;color:#5b6964">The structured data follows in a second email.</p>', E.json] : [E.both];
+    sentRef.parts = (sentRef.parts && sentRef.parts.length === parts.length) ? sentRef.parts : parts.map(() => false);
+    try {
+      if (!window.emailjs) throw new Error('The email service did not load. Check your internet connection.');
+      if (!/^template_[A-Za-z0-9]+$/.test(SETTINGS.EMAILJS_TEMPLATE_ID)) throw new Error('This form is not finished being set up. Please tell BidElevate.');
+      emailjs.init({ publicKey: SETTINGS.EMAILJS_PUBLIC_KEY });
+      for (let p = 0; p < parts.length; p++) {
+        if (sentRef.parts[p]) continue;
+        const res = await emailjs.send(SETTINGS.EMAILJS_SERVICE_ID, SETTINGS.EMAILJS_TEMPLATE_ID, {
+          subject: subj + (parts.length > 1 ? ' (' + (p+1) + ' of ' + parts.length + ')' : ''),
+          submission_ref: ref, client_name: C.c, tender_title: C.t, content_html: parts[p]
+        });
+        if (!res || res.status !== 200) throw new Error('The email service replied with an error.');
+        sentRef.parts[p] = true; store.set(KEY, { A, F, sentRef, at });
+        if (p < parts.length - 1) await new Promise(r => setTimeout(r, 1200));
+      }
+      sentRef = { ref, pending: false, at }; store.set(KEY, { A, F, sentRef, at });
+      done(ref);
+    } catch(e) {
+      err.innerHTML = 'Your commitments have not been sent yet. ' + esc((e && (e.text || e.message)) || '') + '<br>Your answers are saved on this device. Please check your connection and tap Send again.';
+      err.hidden = false;
+      $('send').disabled = false; $('send').textContent = 'Send commitments to BidElevate';
+    }
+    sending = false;
+  };
+  function done(ref){
+    $('formview').hidden = true;
+    const v = $('doneview'); v.hidden = false;
+    v.innerHTML = `<section style="text-align:center"><h2>Thank you. Your commitments have been sent.</h2>
+      <p>BidElevate will use them in the social value part of your tender.</p>
+      <p class="muted small" style="margin-top:8px">Reference ${esc(ref)}</p>
+      <button class="linkbtn small" type="button" id="again" style="margin-top:10px">Need to change something? Edit and send again</button></section>`;
+    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.ok = false); renderActs(); sentRef = null; save(); window.scrollTo({top:0}); };
+    window.scrollTo({ top:0 });
+  }
+  if (sentRef && !sentRef.pending) done(sentRef.ref);
+})();
+</script>
+</body>
+</html>
