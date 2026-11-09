@@ -245,7 +245,7 @@ const SETTINGS = {
   const syncOrig = () => { while (orig.length < A.length) orig.push(blankOrig()); orig.length = A.length; };
 
   // Key ties saved answers to this exact form
-  const KEY = 'be_sv1_' + LZString.compressToBase64(C.c + '|' + C.t + '|' + C.s + '|' + C.e + '|' + C.a.map(a => a.n).join('|')).slice(0, 60);
+  const KEY = 'be_sv1_' + (typeof C.k === 'string' ? C.k.replace(/[^a-z0-9]/gi, '').slice(0, 16) + '_' : '') + LZString.compressToBase64(C.c + '|' + C.t + '|' + C.s + '|' + C.e + '|' + C.a.map(a => a.n).join('|')).slice(0, 60);
   let A = orig.map(o => Object.assign({}, o, { q: o.q.slice(), d: '', ex: '', cur: '', cm: '' }));
   let F = { name:'', title:'', notes:'' };
   let sentRef = null;
@@ -677,7 +677,16 @@ const SETTINGS = {
     v.innerHTML = `<section style="text-align:center"><h2>Thank you. Your commitments have been sent.</h2>
       <p>BidElevate will use them in the social value part of your tender.</p>
       <p class="muted small" style="margin-top:8px">Reference ${esc(ref)}</p>
-      <button class="linkbtn small" type="button" id="again" style="margin-top:10px">Need to change something? Edit and send again</button></section>`;
+      <button class="linkbtn small" type="button" id="again" style="margin-top:10px">Need to change something? Edit and send again</button>
+      <p class="muted small" style="margin-top:14px"><button class="linkbtn" type="button" id="fresh">Start a fresh copy on this device</button></p></section>`;
+    let freshArmed = null;
+    $('fresh').onclick = () => {
+      const b = $('fresh');
+      if (!freshArmed) { b.textContent = 'Tap again to clear this device and start fresh'; freshArmed = setTimeout(() => { b.textContent = 'Start a fresh copy on this device'; freshArmed = null; }, 4000); return; }
+      clearTimeout(freshArmed); clearTimeout(saveTimer);
+      try { localStorage.removeItem(KEY); } catch(e) {}
+      location.reload();
+    };
     $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.d = ''); renderActs(); fitAll(); sentRef = null; save(); window.scrollTo({top:0}); };
     window.scrollTo({ top:0 });
   }
