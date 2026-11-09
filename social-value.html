@@ -62,7 +62,7 @@ details ol{margin:8px 0 0;padding-left:20px;font-size:.92rem}
 .years{width:100%;border-collapse:collapse;font-size:.95rem;margin-top:2px}
 .years th,.years td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 .years th{font-size:.82rem;color:var(--muted);font-weight:600}
-.years td.q{width:110px}
+.years td.q{width:auto}
 .years input{padding:6px 8px;text-align:right;min-height:40px;font-variant-numeric:tabular-nums}
 .years tr.total td{font-weight:700;border-bottom:0}
 .years tr.total td.q{text-align:right;padding-right:17px;font-variant-numeric:tabular-nums}
@@ -70,6 +70,12 @@ details ol{margin:8px 0 0;padding-left:20px;font-size:.92rem}
 .radios{display:grid;gap:8px}
 .radios.bad{outline:2px solid var(--danger);outline-offset:4px;border-radius:6px}
 .chk input[type=radio]{accent-color:var(--brand)}
+.qw{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.qw input{width:84px;flex:none}
+.qw .pre{font-weight:600}
+.qw .suf{font-size:.82rem;color:var(--muted);max-width:120px;line-height:1.25}
+select{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:9px 11px;min-height:44px}
+select.bad{border-color:var(--danger);background:var(--danger-soft)}
 .decision{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft);display:grid;gap:8px}
 .decision.bad{background:var(--danger-soft);color:var(--danger)}
 .renote{font-size:.88rem;color:var(--danger);font-weight:600}
@@ -130,6 +136,41 @@ const SETTINGS = {
   const num = v => (v === '' || v == null || !isFinite(+v)) ? null : +v;
   const fmtNum = n => (Math.round(n*100)/100).toLocaleString('en-GB');
 
+
+  /* ---------- units: same rules on the builder, client form and email ---------- */
+  const UNITS = [
+    { k:'gbp',    label:'Pounds (£)', money:true, alias:['£','pounds','pound','gbp','money'] },
+    { k:'staff',  label:'Staff briefed', one:'staff member briefed', many:'staff briefed', tOne:'staff briefing completion', tMany:'staff briefing completions', alias:['staff','staff members briefed'] },
+    { k:'place',  label:'Student placements', one:'placement', many:'placements', alias:['placements','placement','student placement'] },
+    { k:'hours',  label:'Volunteering hours', one:'hour', many:'hours', alias:['hours','volunteer hours','volunteering hour'] },
+    { k:'travel', label:'Travel plans / reviews', one:'plan', many:'plans', alias:['travel plans','travel plan','travel reviews','travel plans/reviews'] },
+    { k:'events', label:'Fundraising events', one:'event', many:'events', alias:['fundraising event','events'] }
+  ];
+  const unitOf = u => { const t = String(u || '').trim().toLowerCase().replace(/\s+/g, ' '); return t ? (UNITS.find(x => x.label.toLowerCase() === t || x.alias.includes(t)) || null) : null; };
+  const normUnit = u => { const p = unitOf(u); return p ? p.label : String(u || '').trim(); };
+  const unitLabel = normUnit;
+  const singular = w => /ies$/i.test(w) ? w.slice(0, -3) + 'y' : /(ss|sh|ch|x)es$/i.test(w) ? w.slice(0, -2) : /[^s]s$/i.test(w) ? w.slice(0, -1) : w;
+  const nf = (n, money) => n.toLocaleString('en-GB', { minimumFractionDigits: money && n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  function unitWord(u, n, isTotal){
+    const p = unitOf(u), one = n === 1;
+    if (p) { if (p.money) return ''; if (isTotal && p.tMany) return one ? p.tOne : p.tMany; return one ? p.one : p.many; }
+    const t = String(u || '').trim();
+    if (!t || !one) return t;
+    // Singularise the first plural-looking word: "mentoring sessions" -> "mentoring session"
+    const w = t.split(' '), j = w.findIndex(x => /(ies|[^suis]s)$/i.test(x));
+    if (j >= 0) w[j] = singular(w[j]);
+    return w.join(' ');
+  }
+  function fmtQty(n, u, isTotal){
+    if (n == null) return '–';
+    const p = unitOf(u);
+    if (p && p.money) return '£' + nf(n, true);
+    const w = unitWord(u, n, isTotal);
+    return nf(n) + (w ? ' ' + w : '');
+  }
+  const isMoney = u => { const p = unitOf(u); return !!(p && p.money); };
+  const unitSelect = (id, a) => `<select id="${id}"><option value="">Choose a unit</option>${UNITS.map(x => `<option value="${x.k}"${!a.uo && unitOf(a.u) === x ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}<option value="other"${a.uo ? ' selected' : ''}>Other — specify</option></select>`;
+
   /* ---------- read the link ---------- */
   let C = null;
   const m = location.search.match(/[?&]d=([^&#]+)/);
@@ -140,11 +181,12 @@ const SETTINGS = {
     return;
   }
 
-  const FIELDS = ['n','u','im','st','p','hw','r','ev'];
+  const FIELDS = ['n','g','u','im','st','p','hw','r','ev'];
   const EXOPT = { yes: 'Yes, we already do this.', more: 'Yes, but we will increase our activity for this contract.', new: 'No, this will be a new activity.' };
-  const LABELS = { n:'Commitment', u:'Unit', im:'Expected difference', q:'Yearly figures', st:'Start date', p:'Delivery period', hw:'Delivery approach', r:'Responsible person', ev:'Evidence' };
+  const LABELS = { n:'Commitment', g:'Client guidance', u:'Unit', im:'Expected difference', q:'Yearly figures', st:'Start date', p:'Delivery period', hw:'Delivery approach', r:'Responsible person', ev:'Evidence' };
   const orig = C.a.map(a => {
     const o = {}; FIELDS.forEach(f => o[f] = a[f] || '');
+    o.u = normUnit(o.u); o.uo = !!(o.u && !unitOf(o.u));
     o.q = Y.map((_, k) => (a.q && a.q[k] !== '' && a.q[k] != null) ? String(a.q[k]) : '');
     return o;
   });
@@ -158,6 +200,7 @@ const SETTINGS = {
     if (!Array.isArray(list) || list.length !== A.length) return null;
     return list.map(x => { const o = {}; FIELDS.forEach(f => o[f] = typeof x[f] === 'string' ? x[f] : ''); if (!isDate(o.st)) o.st = '';
       o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.d = (x.d === 'approve' || x.d === 'decline') ? x.d : (x.ok ? 'approve' : '');
+      o.u = normUnit(o.u); o.uo = x.uo != null ? !!x.uo : !!(o.u && !unitOf(o.u));
       o.ex = EXOPT[x.ex] ? x.ex : ''; o.cur = x.cur != null ? String(x.cur) : ''; o.cm = typeof x.cm === 'string' ? x.cm : ''; return o; });
   }
   const saved = store.get(KEY);
@@ -216,16 +259,22 @@ const SETTINGS = {
       sec.innerHTML = `
         <div class="cnum">Commitment ${i+1} of ${A.length}</div>
         <div id="body${i}">
-        <div class="field"><label class="lab" for="n${i}">What will you do?</label><textarea id="n${i}" data-f="n" style="min-height:60px"></textarea></div>
-        <div class="field"><label class="lab" for="u${i}">What is being counted?</label><input type="text" id="u${i}" data-f="u" placeholder="For example, student placements or volunteering hours"></div>
+        <div class="field"><label class="lab" for="n${i}">What are we proposing?</label><textarea id="n${i}" data-f="n" style="min-height:60px"></textarea></div>
+        ${orig[i].g ? `<div class="field"><label class="lab" for="g${i}">What will this involve?</label>
+          <p class="muted small guide">What this would mean for your organisation day to day. Change anything that isn't right for you.</p>
+          <textarea id="g${i}" data-f="g" style="min-height:110px"></textarea></div>` : ''}
+        <div class="field"><label class="lab" for="hw${i}">How will this be delivered?</label>
+          <p class="muted small guide">${orig[i].hw ? "We've suggested how this activity could be organised. Please check the arrangements and amend them if needed." : 'Describe how this will be organised, for example who you will work with.'}</p>
+          <textarea id="hw${i}" data-f="hw"></textarea></div>
         <div class="field"><label class="lab" for="im${i}">What difference will this make?</label>
           <p class="muted small guide">${orig[i].im ? "We've suggested the expected benefits of this activity. Please check they are realistic and amend them if needed." : 'Describe the benefits for local people or the community.'}</p>
           <textarea id="im${i}" data-f="im"></textarea></div>
+        <div class="field"><label class="lab" for="u${i}">What is being counted?</label>${unitSelect('u'+i, a)}<input type="text" id="uc${i}" placeholder="Type what is being counted" ${a.uo ? '' : 'hidden'}></div>
         <div class="field">
           <span class="lab">How many each contract year?</span>
           <table class="years"><thead><tr><th>Contract year</th><th style="text-align:right" data-unit></th></tr></thead><tbody>
             ${Y.map((y, k) => `<tr><td>${esc(yearLabel(y,k))}${y.partial ? `<span class="part">Part year: about ${y.months} month${y.months===1?'':'s'}</span>` : ''}</td>
-              <td class="q"><input type="number" min="0" step="any" inputmode="decimal" id="q${i}_${k}" data-k="${k}" aria-label="${esc(yearLabel(y,k))}"></td></tr>`).join('')}
+              <td class="q"><span class="qw"><span class="pre" data-pre></span><input type="number" min="0" step="any" inputmode="decimal" id="q${i}_${k}" data-k="${k}" aria-label="${esc(yearLabel(y,k))}"><span class="suf" data-suf></span></span></td></tr>`).join('')}
             <tr class="total"><td>Total over the contract</td><td class="q" data-total></td></tr>
           </tbody></table>
           <p class="muted small">Put 0 for any year with nothing planned.</p>
@@ -234,9 +283,6 @@ const SETTINGS = {
           <div class="field"><label class="lab" for="st${i}">When will it start?</label><input type="date" id="st${i}" data-f="st"></div>
           <div class="field"><label class="lab" for="p${i}">How often or over what period?</label><input type="text" id="p${i}" data-f="p" placeholder="For example, each academic year"></div>
         </div>
-        <div class="field"><label class="lab" for="hw${i}">How will this be delivered?</label>
-          <p class="muted small guide">${orig[i].hw ? "We've suggested how this activity could be organised. Please check the arrangements and amend them if needed." : 'Describe how this will be organised, for example who you will work with.'}</p>
-          <textarea id="hw${i}" data-f="hw"></textarea></div>
         <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label><input type="text" id="r${i}" data-f="r" placeholder="Name and job title"></div>
         <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
         <div class="field"><span class="lab" id="exl${i}">Is this something your organisation already does?</span>
@@ -253,14 +299,25 @@ const SETTINGS = {
           <p class="muted small" id="dn${i}" hidden>Declined. You don't need to fill in this commitment. Choose Approve if you change your mind.</p>
         </div>`;
       const unitHead = sec.querySelector('[data-unit]');
-      const setUnit = () => { unitHead.textContent = a.u.trim() ? a.u.trim().slice(0, 30) : 'Number'; };
       sec.querySelectorAll('[data-f]').forEach(inp => {
         const f = inp.dataset.f; inp.value = a[f];
-        inp.addEventListener('input', () => { a[f] = inp.value; inp.classList.remove('bad'); if (f === 'u') setUnit(); save(); });
+        inp.addEventListener('input', () => { a[f] = inp.value; inp.classList.remove('bad'); save(); });
       });
-      setUnit();
       const tot = sec.querySelector('[data-total]');
-      const sum = () => { let t = 0, any = false; a.q.forEach(v => { const n = num(v); if (n != null) { t += n; any = true; } }); tot.textContent = any ? fmtNum(t) : '–'; };
+      const sum = () => {
+        unitHead.textContent = unitLabel(a.u) ? unitLabel(a.u).slice(0, 30) : 'Number';
+        sec.querySelectorAll('[data-k]').forEach(inp => { const v = num(a.q[+inp.dataset.k]);
+          inp.parentNode.querySelector('[data-pre]').textContent = isMoney(a.u) ? '£' : '';
+          inp.parentNode.querySelector('[data-suf]').textContent = unitWord(a.u, v == null ? 0 : v, false); });
+        let t = 0, any = false; a.q.forEach(v => { const n = num(v); if (n != null) { t += n; any = true; } }); tot.textContent = any ? fmtQty(t, a.u, true) : '–'; };
+      // Changing the unit never touches the yearly numbers
+      const usel = sec.querySelector('#u'+i), uc = sec.querySelector('#uc'+i);
+      uc.value = a.uo ? a.u : '';
+      usel.addEventListener('change', () => {
+        a.uo = usel.value === 'other'; uc.hidden = !a.uo;
+        a.u = a.uo ? uc.value.trim() : ((UNITS.find(x => x.k === usel.value) || {}).label || '');
+        usel.classList.remove('bad'); uc.classList.remove('bad'); sum(); save(); });
+      uc.addEventListener('input', () => { a.u = uc.value; uc.classList.remove('bad'); sum(); save(); });
       sec.querySelectorAll('[data-k]').forEach(inp => {
         const k = +inp.dataset.k; inp.value = a.q[k];
         inp.addEventListener('input', () => { a.q[k] = inp.value; inp.classList.remove('bad'); sum(); save(); });
@@ -316,7 +373,7 @@ const SETTINGS = {
       if (a.d === 'decline') return;
       if (!a.d) { mark($('cl'+i)); unticked.push(i+1); }
       let miss = false;
-      FIELDS.forEach(f => { if (!String(a[f]).trim()) { mark($(f+i)); miss = true; } });
+      FIELDS.forEach(f => { if (f === 'g') return; if (!String(a[f]).trim()) { mark(f === 'u' ? $(a.uo ? 'uc'+i : 'u'+i) : $(f+i)); miss = true; } });
       a.q.forEach((v, k) => { const n = num(v); if (n == null || n < 0) { mark($('q'+i+'_'+k)); miss = true; } });
       if (!a.ex) { mark($('ex'+i)); miss = true; }
       if (a.ex === 'more') { const n = num(a.cur); if (n == null || n < 0) { mark($('cur'+i)); miss = true; } }
@@ -336,6 +393,7 @@ const SETTINGS = {
   function status(i){
     const a = A[i], o = orig[i], changed = [], added = [];
     FIELDS.concat('q').forEach(f => {
+      if (f === 'g' && !o.g.trim()) return;
       const was = f === 'q' ? o.q.join('|') : o[f].trim(), now = f === 'q' ? a.q.map(v => String(num(v))).join('|') : a[f].trim();
       const wasNorm = f === 'q' ? o.q.map(v => v === '' ? '' : String(num(v))).join('|') : was;
       const blank = f === 'q' ? o.q.every(v => v === '') : !was;
@@ -352,12 +410,13 @@ const SETTINGS = {
       anticipated_award: C.aw || '', contract_start: C.s, contract_end: C.e,
       contract_years: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, part_year: y.partial })),
       commitments: OK.map(i => { const a = A[i]; return {
-        order: i+1, commitment: a.n.trim(), unit: a.u.trim(), expected_difference: a.im.trim(),
-        yearly: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, quantity: num(a.q[k]) })),
-        total: total(a), start_date: a.st, delivery_period: a.p.trim(), delivery_approach: a.hw.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
-        existing_activity: EXOPT[a.ex], current_yearly_quantity: a.ex === 'more' ? num(a.cur) : null, comments: a.cm.trim(),
+        order: i+1, commitment: a.n.trim(), client_guidance: a.g.trim(), unit: unitLabel(a.u), expected_difference: a.im.trim(),
+        yearly: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, part_year: y.partial, quantity: num(a.q[k]), display: fmtQty(num(a.q[k]), a.u, false) })),
+        total: total(a), total_display: fmtQty(total(a), a.u, true), start_date: a.st, delivery_period: a.p.trim(), delivery_approach: a.hw.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
+        existing_activity: EXOPT[a.ex], current_yearly_quantity: a.ex === 'more' ? num(a.cur) : null, current_yearly_display: a.ex === 'more' ? fmtQty(num(a.cur), a.u, false) : '', comments: a.cm.trim(),
         client_decision: 'Approved', status: S[i].label, filled_in_by_client: S[i].added
       }; }),
+      client_guidance_note: 'client_guidance explains each commitment to the client in plain English. It is for BidElevate only: not a separate deliverable and not for the authority submission.',
       declined_commitments: NO.map(i => ({ order: i+1, commitment: orig[i].n.trim() || A[i].n.trim() })),
       notes: F.notes.trim(), confirmed_by: { name: F.name.trim(), job_title: F.title.trim() },
       confirmation: 'I confirm the commitments I have approved, and their yearly figures, are realistic and agreed by our organisation.'
@@ -374,14 +433,14 @@ const SETTINGS = {
     h += '<h3 style="font-size:15px;margin:0 0 6px">Approved commitments and yearly figures</h3>';
     if (!OK.length) h += '<p style="margin:0;font-size:14px"><strong>The client did not approve any commitments.</strong></p>';
     else {
-    h += '<table style="border-collapse:collapse;width:100%"><tr><th ' + th + '>#</th><th ' + th + '>Commitment</th><th ' + th + '>Unit</th><th ' + th + '>What difference it will make</th>';
+    h += '<table style="border-collapse:collapse;width:100%"><tr><th ' + th + '>#</th><th ' + th + '>Commitment</th><th ' + th + '>What it involves<br><span style="font-weight:normal">(client guidance, internal only)</span></th><th ' + th + '>Unit</th><th ' + th + '>What difference it will make</th>';
     Y.forEach((y, k) => { h += '<th ' + th + '>Year ' + (k+1) + '<br><span style="font-weight:normal">' + esc(my(y.s)) + ' – ' + esc(my(y.e)) + (y.partial ? ' (part)' : '') + '</span></th>'; });
     h += '<th ' + th + '>Total</th><th ' + th + '>Start</th><th ' + th + '>Delivery period</th><th ' + th + '>How it will be delivered</th><th ' + th + '>Responsible</th><th ' + th + '>Evidence</th><th ' + th + '>Already done?</th><th ' + th + '>Comments</th><th ' + th + '>Status</th></tr>';
     OK.forEach(i => { const a = A[i];
-      h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '>' + esc(a.u.trim()) + '</td><td ' + td + '>' + esc(a.im.trim()).replace(/\n/g,'<br>') + '</td>';
-      a.q.forEach(v => { h += '<td ' + tdn + '>' + esc(fmtNum(num(v))) + '</td>'; });
-      h += '<td ' + tdn + '><strong>' + esc(fmtNum(total(a))) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.hw.trim()).replace(/\n/g,'<br>') + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
-      h += '<td ' + td + '>' + esc(EXOPT[a.ex]) + (a.ex === 'more' ? '<br><strong>Currently ' + esc(fmtNum(num(a.cur))) + ' a year</strong>' : '') + '</td><td ' + td + '>' + esc(a.cm.trim()).replace(/\n/g,'<br>') + '</td>';
+      h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '><span style="color:#5b6964">' + esc(a.g.trim()).replace(/\n/g,'<br>') + '</span></td><td ' + td + '>' + esc(unitLabel(a.u)) + '</td><td ' + td + '>' + esc(a.im.trim()).replace(/\n/g,'<br>') + '</td>';
+      a.q.forEach(v => { h += '<td ' + tdn + '>' + esc(fmtQty(num(v), a.u, false)) + '</td>'; });
+      h += '<td ' + tdn + '><strong>' + esc(fmtQty(total(a), a.u, true)) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.hw.trim()).replace(/\n/g,'<br>') + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
+      h += '<td ' + td + '>' + esc(EXOPT[a.ex]) + (a.ex === 'more' ? '<br><strong>Currently ' + esc(fmtQty(num(a.cur), a.u, false)) + ' a year</strong>' : '') + '</td><td ' + td + '>' + esc(a.cm.trim()).replace(/\n/g,'<br>') + '</td>';
       const st = S[i];
       h += '<td ' + td + '>' + (st.changed.length ? '<strong style="color:#a2432f">' + esc(st.label) + '</strong>' : esc(st.label)) + (st.added.length ? '<br><span style="color:#5b6964">Filled in by client: ' + esc(st.added.join(', ')) + '</span>' : '') + '</td></tr>';
     });
