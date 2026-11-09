@@ -248,7 +248,11 @@ const SETTINGS = {
       o.ex = EXOPT[x.ex] ? x.ex : ''; o.cur = x.cur != null ? String(x.cur) : ''; o.cm = typeof x.cm === 'string' ? x.cm : ''; return o; });
   }
   const saved = store.get(KEY);
-  if (saved) { const a = cleanA(saved.A); if (a) { A = a; F = Object.assign(F, saved.F || {}); sentRef = saved.sentRef || null; } }
+  // A saved approval only stands if every required box is still filled in (e.g. after the form gains a new required box)
+  const needsWork = a => FIELDS.some(f => f !== 'g' && !String(a[f] || '').trim()) || a.q.some(v => { const n = num(v); return n == null || n < 0; })
+    || !a.ex || (a.ex === 'more' && (num(a.cur) == null || num(a.cur) < 0));
+  const recheck = list => list.forEach(a => { if (a.d === 'approve' && needsWork(a)) a.d = ''; });
+  if (saved) { const a = cleanA(saved.A); if (a) { recheck(a); A = a; F = Object.assign(F, saved.F || {}); sentRef = saved.sentRef || null; } }
   let saveTimer;
   function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (store.set(KEY, { A, F, sentRef, at: new Date().toISOString() })) $('savedat').textContent = 'Saved on this device'; }, 300); }
 
@@ -294,6 +298,7 @@ const SETTINGS = {
           </ol>
           <p class="muted small" style="margin-top:8px">Forwarding the link on its own sends a form with only our suggestions in it.</p>
         </details>
+        <p class="muted small" style="margin-top:12px">Want a fresh copy? <button class="linkbtn" type="button" id="reset">Clear my answers and start again</button></p>
       </section>
       <footer>BidElevate Ltd · hello@bidelevate.co.uk</footer>
     </div>
@@ -478,6 +483,14 @@ const SETTINGS = {
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   };
   $('imp').onclick = () => $('draftfile').click();
+  let resetArmed = null;
+  $('reset').onclick = () => {
+    const b = $('reset');
+    if (!resetArmed) { b.textContent = 'Tap again to clear everything on this device'; resetArmed = setTimeout(() => { b.textContent = 'Clear my answers and start again'; resetArmed = null; }, 4000); return; }
+    clearTimeout(resetArmed); clearTimeout(saveTimer);
+    try { localStorage.removeItem(KEY); } catch(e) {}
+    location.reload();
+  };
   $('draftfile').onchange = e => {
     const file = e.target.files[0]; e.target.value = '';
     if (!file) return;
@@ -485,7 +498,7 @@ const SETTINGS = {
       let d = null; try { d = JSON.parse(t); } catch(x) {}
       const a = d && d.form === KEY ? cleanA(d.A) : null;
       if (!a) { alert("That file doesn't match this form. Please check it came from the same link."); return; }
-      A = a; F = Object.assign({ name:'', title:'', notes:'' }, d.F || {});
+      recheck(a); A = a; F = Object.assign({ name:'', title:'', notes:'' }, d.F || {});
       renderActs(); ['notes','name','title'].forEach(id => $(id).value = F[id] || ''); fitAll();
       save(); alert('Answers loaded.');
     });
