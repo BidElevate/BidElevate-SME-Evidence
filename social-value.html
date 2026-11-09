@@ -230,6 +230,7 @@ const SETTINGS = {
   const orig = C.a.map(a => {
     const o = {}; FIELDS.forEach(f => o[f] = a[f] || '');
     o.u = normUnit(o.u); o.uo = !!(o.u && !unitOf(o.u));
+    o.rs = o.r.trim(); o.r = ''; // the client must type the responsible person themselves
     o.q = Y.map((_, k) => (a.q && a.q[k] !== '' && a.q[k] != null) ? String(a.q[k]) : '');
     return o;
   });
@@ -242,7 +243,7 @@ const SETTINGS = {
   function cleanA(list){
     if (!Array.isArray(list) || list.length !== A.length) return null;
     return list.map(x => { const o = {}; FIELDS.forEach(f => o[f] = typeof x[f] === 'string' ? x[f] : ''); if (!isDate(o.st)) o.st = '';
-      o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.d = (x.d === 'approve' || x.d === 'decline') ? x.d : (x.ok ? 'approve' : '');
+      o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.d = (x.d === 'approve' || x.d === 'decline') ? x.d : '';
       o.u = normUnit(o.u); o.uo = x.uo != null ? !!x.uo : !!(o.u && !unitOf(o.u));
       o.ex = EXOPT[x.ex] ? x.ex : ''; o.cur = x.cur != null ? String(x.cur) : ''; o.cm = typeof x.cm === 'string' ? x.cm : ''; return o; });
   }
@@ -381,7 +382,9 @@ const SETTINGS = {
         </div>
         </div>
         <div class="col"><p class="colhead">Responsibility and evidence</p>
-        <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label><input type="text" id="r${i}" data-f="r" placeholder="Name and job title"></div>
+        <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label>
+          <p class="muted small guide">Type the name and job title of the person in your organisation who will lead this.${orig[i].rs ? ' Suggested role: ' + esc(orig[i].rs) + '.' : ''}</p>
+          <input type="text" id="r${i}" data-f="r" placeholder="Name and job title" autocomplete="off"></div>
         <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
         <div class="field"><span class="lab" id="exl${i}">Is this something your organisation already does?</span>
           <div class="radios" id="ex${i}" role="radiogroup" aria-labelledby="exl${i}">
