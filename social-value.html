@@ -224,13 +224,13 @@ const SETTINGS = {
     return;
   }
 
-  const FIELDS = ['n','g','u','im','st','p','hw','r','ev'];
+  const FIELDS = ['n','g','u','im','st','p','hw','r','rr','ev'];
   const EXOPT = { yes: 'Yes, we already do this.', more: 'Yes, but we will increase our activity for this contract.', new: 'No, this will be a new activity.' };
-  const LABELS = { n:'Commitment', g:'Client guidance', u:'Unit', im:'Expected difference', q:'Yearly figures', st:'Start date', p:'Delivery period', hw:'Delivery approach', r:'Responsible person', ev:'Evidence' };
+  const LABELS = { n:'Commitment', g:'Client guidance', u:'Unit', im:'Expected difference', q:'Yearly figures', st:'Start date', p:'Delivery period', hw:'Delivery approach', r:'Responsible person name', rr:'Responsible person role', ev:'Evidence' };
   const orig = C.a.map(a => {
     const o = {}; FIELDS.forEach(f => o[f] = a[f] || '');
     o.u = normUnit(o.u); o.uo = !!(o.u && !unitOf(o.u));
-    o.rs = o.r.trim(); o.r = ''; // the client must type the responsible person themselves
+    o.rs = o.r.trim(); o.r = ''; o.rr = ''; // the client must type the responsible person themselves
     o.q = Y.map((_, k) => (a.q && a.q[k] !== '' && a.q[k] != null) ? String(a.q[k]) : '');
     return o;
   });
@@ -382,9 +382,12 @@ const SETTINGS = {
         </div>
         </div>
         <div class="col"><p class="colhead">Responsibility and evidence</p>
-        <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label>
+        <div class="field"><span class="lab">Who will make sure it happens?</span>
           <p class="muted small guide">Type the name and job title of the person in your organisation who will lead this.${orig[i].rs ? ' Suggested role: ' + esc(orig[i].rs) + '.' : ''}</p>
-          <input type="text" id="r${i}" data-f="r" placeholder="Name and job title" autocomplete="off"></div>
+          <div class="two">
+            <div><label class="lab" for="r${i}" style="font-weight:500;font-size:.9rem">Name</label><input type="text" id="r${i}" data-f="r" placeholder="Full name" autocomplete="off"></div>
+            <div><label class="lab" for="rr${i}" style="font-weight:500;font-size:.9rem">Job title or role</label><input type="text" id="rr${i}" data-f="rr" placeholder="For example, Registered Manager" autocomplete="off"></div>
+          </div></div>
         <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
         <div class="field"><span class="lab" id="exl${i}">Is this something your organisation already does?</span>
           <div class="radios" id="ex${i}" role="radiogroup" aria-labelledby="exl${i}">
@@ -535,7 +538,7 @@ const SETTINGS = {
       commitments: OK.map(i => { const a = A[i]; return {
         order: i+1, commitment: a.n.trim(), client_guidance: a.g.trim(), unit: unitLabel(a.u), expected_difference: a.im.trim(),
         yearly: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, part_year: y.partial, quantity: num(a.q[k]), display: fmtQty(num(a.q[k]), a.u, false) })),
-        total: total(a), total_display: fmtQty(total(a), a.u, true), start_date: a.st, delivery_period: a.p.trim(), delivery_approach: a.hw.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
+        total: total(a), total_display: fmtQty(total(a), a.u, true), start_date: a.st, delivery_period: a.p.trim(), delivery_approach: a.hw.trim(), responsible_person: a.r.trim() + ', ' + a.rr.trim(), responsible_name: a.r.trim(), responsible_role: a.rr.trim(), evidence: a.ev.trim(),
         existing_activity: EXOPT[a.ex], current_yearly_quantity: a.ex === 'more' ? num(a.cur) : null, current_yearly_display: a.ex === 'more' ? fmtQty(num(a.cur), a.u, false) : '', comments: a.cm.trim(),
         client_decision: 'Approved', status: S[i].label, filled_in_by_client: S[i].added
       }; }),
@@ -562,7 +565,7 @@ const SETTINGS = {
     OK.forEach(i => { const a = A[i];
       h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '><span style="color:#5b6964">' + esc(a.g.trim()).replace(/\n/g,'<br>') + '</span></td><td ' + td + '>' + esc(unitLabel(a.u)) + '</td><td ' + td + '>' + esc(a.im.trim()).replace(/\n/g,'<br>') + '</td>';
       a.q.forEach(v => { h += '<td ' + tdn + '>' + esc(fmtQty(num(v), a.u, false)) + '</td>'; });
-      h += '<td ' + tdn + '><strong>' + esc(fmtQty(total(a), a.u, true)) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.hw.trim()).replace(/\n/g,'<br>') + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
+      h += '<td ' + tdn + '><strong>' + esc(fmtQty(total(a), a.u, true)) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.hw.trim()).replace(/\n/g,'<br>') + '</td><td ' + td + '>' + '<strong>' + esc(a.r.trim()) + '</strong><br>' + esc(a.rr.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
       h += '<td ' + td + '>' + esc(EXOPT[a.ex]) + (a.ex === 'more' ? '<br><strong>Currently ' + esc(fmtQty(num(a.cur), a.u, false)) + ' a year</strong>' : '') + '</td><td ' + td + '>' + esc(a.cm.trim()).replace(/\n/g,'<br>') + '</td>';
       const st = S[i];
       h += '<td ' + td + '>' + (st.changed.length ? '<strong style="color:#a2432f">' + esc(st.label) + '</strong>' : esc(st.label)) + (st.added.length ? '<br><span style="color:#5b6964">Filled in by client: ' + esc(st.added.join(', ')) + '</span>' : '') + '</td></tr>';
