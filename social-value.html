@@ -170,7 +170,7 @@ const SETTINGS = {
   const contractLine = 'Contract ' + fmt(C.s) + ' to ' + fmt(C.e) + (C.aw ? ' · Expected award ' + fmt(C.aw) : '');
   app.insertAdjacentHTML('beforeend', `
     <section>
-      <p class="muted small">Social value commitments</p>
+      <p class="muted small"><span aria-hidden="true">🌿</span> Social value commitments</p>
       <h1>${esc(C.t)}</h1>
       <p class="muted">${esc(C.c)}</p>
       <p class="muted small" style="margin-top:2px">${esc(contractLine)}</p>
