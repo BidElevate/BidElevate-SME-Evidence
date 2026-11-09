@@ -123,6 +123,8 @@ section.card.open{border:2px solid var(--brand)}
   #send{width:auto;min-width:320px;display:flex;margin-left:auto}
 }
 @media (max-width:560px){.dbtns .btn{max-width:none}}
+.warnnote{background:var(--danger-soft);color:var(--danger);font-weight:600;font-size:.92rem;line-height:1.45;border-radius:8px;padding:9px 12px;margin:2px 0 6px}
+.editnote{background:var(--brand-soft);color:var(--ink);font-weight:600;line-height:1.45;border-radius:8px;padding:12px 14px;margin-bottom:12px}
 .confirm{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft)}
 .confirm.bad{background:var(--danger-soft);color:var(--danger)}
 footer{color:var(--muted);font-size:.8rem;text-align:center}
@@ -270,6 +272,7 @@ const SETTINGS = {
     </section>
     <div id="formview" style="display:grid;gap:16px">
       <section>
+        <p class="editnote">This form is fully editable. Everything we have suggested, including the wording, figures and dates, can be changed so that it reflects what your organisation can genuinely deliver.</p>
         <p>These are the extra benefits your organisation would offer the local community through this contract, such as placements, volunteering or local jobs. We have suggested some, with figures for each contract year.</p>
         <div class="introrow" style="margin-top:10px">
           <p class="txt">Work through each one: change anything that isn't realistic for you, then approve it, or decline it if you don't want to offer it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
@@ -374,6 +377,7 @@ const SETTINGS = {
         <div class="field"><label class="lab" for="u${i}">What is being counted?</label>${unitSelect('u'+i, a)}<input type="text" id="uc${i}" placeholder="Type what is being counted" ${a.uo ? '' : 'hidden'}></div>
         <div class="field">
           <span class="lab">How many each contract year?</span>
+          <p class="warnnote" role="note">These figures are our suggestions, not fixed targets. Please review each year carefully and change it to what your organisation can realistically deliver and afford. Reduce a figure if it is too high, or increase it if you can offer more. Once approved, these figures become commitments in your tender.</p>
           <table class="years"><thead><tr><th>Contract year</th><th style="text-align:right" data-unit></th></tr></thead><tbody>
             ${Y.map((y, k) => `<tr><td>${esc(yearLabel(y,k))}${y.partial ? `<span class="part">Part year: about ${y.months} month${y.months===1?'':'s'}</span>` : ''}</td>
               <td class="q"><span class="qw"><span class="pre" data-pre></span><input type="number" min="0" step="any" inputmode="decimal" id="q${i}_${k}" data-k="${k}" aria-label="${esc(yearLabel(y,k))}"><span class="suf" data-suf></span></span></td></tr>`).join('')}
