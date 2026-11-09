@@ -67,6 +67,13 @@ details ol{margin:8px 0 0;padding-left:20px;font-size:.92rem}
 .years tr.total td{font-weight:700;border-bottom:0}
 .years tr.total td.q{text-align:right;padding-right:17px;font-variant-numeric:tabular-nums}
 .part{font-size:.8rem;color:var(--muted);display:block}
+.radios{display:grid;gap:8px}
+.radios.bad{outline:2px solid var(--danger);outline-offset:4px;border-radius:6px}
+.chk input[type=radio]{accent-color:var(--brand)}
+.decision{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft);display:grid;gap:8px}
+.decision.bad{background:var(--danger-soft);color:var(--danger)}
+.renote{font-size:.88rem;color:var(--danger);font-weight:600}
+.guide{margin:0 0 2px}
 .confirm{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft)}
 .confirm.bad{background:var(--danger-soft);color:var(--danger)}
 footer{color:var(--muted);font-size:.8rem;text-align:center}
@@ -133,8 +140,9 @@ const SETTINGS = {
     return;
   }
 
-  const FIELDS = ['n','u','st','p','r','ev'];
-  const LABELS = { n:'Commitment', u:'Unit', q:'Yearly figures', st:'Start date', p:'Delivery period', r:'Responsible person', ev:'Evidence' };
+  const FIELDS = ['n','u','im','st','p','hw','r','ev'];
+  const EXOPT = { yes: 'Yes, we already do this.', more: 'Yes, but we will increase our activity for this contract.', new: 'No, this will be a new activity.' };
+  const LABELS = { n:'Commitment', u:'Unit', im:'Expected difference', q:'Yearly figures', st:'Start date', p:'Delivery period', hw:'Delivery approach', r:'Responsible person', ev:'Evidence' };
   const orig = C.a.map(a => {
     const o = {}; FIELDS.forEach(f => o[f] = a[f] || '');
     o.q = Y.map((_, k) => (a.q && a.q[k] !== '' && a.q[k] != null) ? String(a.q[k]) : '');
@@ -143,13 +151,14 @@ const SETTINGS = {
 
   // Key ties saved answers to this exact form
   const KEY = 'be_sv1_' + LZString.compressToBase64(C.c + '|' + C.t + '|' + C.s + '|' + C.e + '|' + C.a.map(a => a.n).join('|')).slice(0, 60);
-  let A = orig.map(o => Object.assign({}, o, { q: o.q.slice(), ok: false }));
+  let A = orig.map(o => Object.assign({}, o, { q: o.q.slice(), d: '', ex: '', cur: '', cm: '' }));
   let F = { name:'', title:'', notes:'' };
   let sentRef = null;
   function cleanA(list){
     if (!Array.isArray(list) || list.length !== A.length) return null;
     return list.map(x => { const o = {}; FIELDS.forEach(f => o[f] = typeof x[f] === 'string' ? x[f] : ''); if (!isDate(o.st)) o.st = '';
-      o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.ok = !!x.ok; return o; });
+      o.q = Y.map((_, k) => (Array.isArray(x.q) && x.q[k] != null) ? String(x.q[k]) : ''); o.d = (x.d === 'approve' || x.d === 'decline') ? x.d : (x.ok ? 'approve' : '');
+      o.ex = EXOPT[x.ex] ? x.ex : ''; o.cur = x.cur != null ? String(x.cur) : ''; o.cm = typeof x.cm === 'string' ? x.cm : ''; return o; });
   }
   const saved = store.get(KEY);
   if (saved) { const a = cleanA(saved.A); if (a) { A = a; F = Object.assign(F, saved.F || {}); sentRef = saved.sentRef || null; } }
@@ -170,7 +179,7 @@ const SETTINGS = {
     <div id="formview" style="display:grid;gap:16px">
       <section>
         <p>These are the extra benefits your organisation would offer the local community through this contract, such as placements, volunteering or local jobs. We have suggested some, with figures for each contract year.</p>
-        <p style="margin-top:10px">Please check each one carefully and change anything that isn't realistic for you. Then tick to confirm it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
+        <p style="margin-top:10px">Please check each one carefully. Change anything that isn't realistic for you, then approve it. If you don't want to offer one, decline it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
       </section>
       <div id="acts" style="display:grid;gap:16px"></div>
       <section>
@@ -179,7 +188,7 @@ const SETTINGS = {
           <div class="field"><label class="lab" for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
           <div class="field"><label class="lab" for="title">Your job title</label><input type="text" id="title" autocomplete="organization-title"></div>
         </div>
-        <label class="chk" id="okl"><input type="checkbox" id="ok"> I confirm these commitments and yearly figures are realistic and agreed by our organisation.</label>
+        <label class="chk" id="okl"><input type="checkbox" id="ok"> I confirm the commitments I have approved, and their yearly figures, are realistic and agreed by our organisation.</label>
         <div id="err" class="banner error" hidden style="margin-top:12px"></div>
         <button class="btn" type="button" id="send" style="width:100%;margin-top:14px">Send commitments to BidElevate</button>
         <p class="saved" id="savedat" style="margin-top:8px"></p>
@@ -206,8 +215,12 @@ const SETTINGS = {
       sec.id = 'card' + i;
       sec.innerHTML = `
         <div class="cnum">Commitment ${i+1} of ${A.length}</div>
+        <div id="body${i}">
         <div class="field"><label class="lab" for="n${i}">What will you do?</label><textarea id="n${i}" data-f="n" style="min-height:60px"></textarea></div>
         <div class="field"><label class="lab" for="u${i}">What is being counted?</label><input type="text" id="u${i}" data-f="u" placeholder="For example, student placements or volunteering hours"></div>
+        <div class="field"><label class="lab" for="im${i}">What difference will this make?</label>
+          <p class="muted small guide">${orig[i].im ? "We've suggested the expected benefits of this activity. Please check they are realistic and amend them if needed." : 'Describe the benefits for local people or the community.'}</p>
+          <textarea id="im${i}" data-f="im"></textarea></div>
         <div class="field">
           <span class="lab">How many each contract year?</span>
           <table class="years"><thead><tr><th>Contract year</th><th style="text-align:right" data-unit></th></tr></thead><tbody>
@@ -221,9 +234,24 @@ const SETTINGS = {
           <div class="field"><label class="lab" for="st${i}">When will it start?</label><input type="date" id="st${i}" data-f="st"></div>
           <div class="field"><label class="lab" for="p${i}">How often or over what period?</label><input type="text" id="p${i}" data-f="p" placeholder="For example, each academic year"></div>
         </div>
+        <div class="field"><label class="lab" for="hw${i}">How will this be delivered?</label>
+          <p class="muted small guide">${orig[i].hw ? "We've suggested how this activity could be organised. Please check the arrangements and amend them if needed." : 'Describe how this will be organised, for example who you will work with.'}</p>
+          <textarea id="hw${i}" data-f="hw"></textarea></div>
         <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label><input type="text" id="r${i}" data-f="r" placeholder="Name and job title"></div>
         <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
-        <label class="chk confirm" id="cl${i}"><input type="checkbox" id="c${i}"> I have checked this commitment, including the figure for each year.</label>`;
+        <div class="field"><span class="lab" id="exl${i}">Is this something your organisation already does?</span>
+          <div class="radios" id="ex${i}" role="radiogroup" aria-labelledby="exl${i}">
+            ${Object.keys(EXOPT).map(k => `<label class="chk"><input type="radio" name="ex${i}" value="${k}"> ${esc(EXOPT[k])}</label>`).join('')}
+          </div></div>
+        <div class="field" id="curw${i}" hidden><label class="lab" for="cur${i}">What quantity do you currently deliver each year?</label><input type="number" min="0" step="any" inputmode="decimal" id="cur${i}" style="max-width:200px"></div>
+        <div class="field"><label class="lab" for="cm${i}">Additional comments or delivery considerations <span class="opt">(optional)</span></label><textarea id="cm${i}"></textarea></div>
+        </div>
+        <div class="decision" id="cl${i}" role="radiogroup" aria-label="Your decision on commitment ${i+1}">
+          <label class="chk"><input type="radio" name="dec${i}" value="approve"> Approve this commitment, including any changes I've made</label>
+          <label class="chk"><input type="radio" name="dec${i}" value="decline"> Decline this commitment. We don't want to offer it.</label>
+          <p class="renote" id="rn${i}" hidden>You've changed this commitment, so please approve it again.</p>
+          <p class="muted small" id="dn${i}" hidden>Declined. You don't need to fill in this commitment. Choose Approve if you change your mind.</p>
+        </div>`;
       const unitHead = sec.querySelector('[data-unit]');
       const setUnit = () => { unitHead.textContent = a.u.trim() ? a.u.trim().slice(0, 30) : 'Number'; };
       sec.querySelectorAll('[data-f]').forEach(inp => {
@@ -238,9 +266,19 @@ const SETTINGS = {
         inp.addEventListener('input', () => { a.q[k] = inp.value; inp.classList.remove('bad'); sum(); save(); });
       });
       sum();
-      const cb = sec.querySelector('#c'+i);
-      cb.checked = a.ok;
-      cb.onchange = () => { a.ok = cb.checked; $('cl'+i).classList.remove('bad'); save(); };
+      const curw = sec.querySelector('#curw'+i), cur = sec.querySelector('#cur'+i), cm = sec.querySelector('#cm'+i);
+      sec.querySelectorAll('input[name="ex'+i+'"]').forEach(r => { r.checked = r.value === a.ex;
+        r.onchange = () => { a.ex = r.value; curw.hidden = a.ex !== 'more'; $('ex'+i).classList.remove('bad'); save(); }; });
+      curw.hidden = a.ex !== 'more';
+      cur.value = a.cur; cur.addEventListener('input', () => { a.cur = cur.value; cur.classList.remove('bad'); save(); });
+      cm.value = a.cm; cm.addEventListener('input', () => { a.cm = cm.value; save(); });
+      const body = sec.querySelector('#body'+i), rn = sec.querySelector('#rn'+i), dn = sec.querySelector('#dn'+i);
+      const decs = sec.querySelectorAll('input[name="dec'+i+'"]');
+      const show = () => { decs.forEach(r => r.checked = r.value === a.d); body.hidden = a.d === 'decline'; dn.hidden = a.d !== 'decline'; if (a.d) rn.hidden = true; };
+      decs.forEach(r => r.onchange = () => { a.d = r.value; $('cl'+i).classList.remove('bad'); show(); save(); });
+      // Any change to an approved commitment needs approving again
+      body.addEventListener('input', () => { if (a.d === 'approve') { a.d = ''; show(); rn.hidden = false; save(); } });
+      show();
       wrap.appendChild(sec);
     });
   }
@@ -275,14 +313,17 @@ const SETTINGS = {
     const mark = el => { el.classList.add('bad'); if (!first) first = el; };
     const missingCards = [], unticked = [];
     A.forEach((a, i) => {
+      if (a.d === 'decline') return;
+      if (!a.d) { mark($('cl'+i)); unticked.push(i+1); }
       let miss = false;
       FIELDS.forEach(f => { if (!String(a[f]).trim()) { mark($(f+i)); miss = true; } });
       a.q.forEach((v, k) => { const n = num(v); if (n == null || n < 0) { mark($('q'+i+'_'+k)); miss = true; } });
+      if (!a.ex) { mark($('ex'+i)); miss = true; }
+      if (a.ex === 'more') { const n = num(a.cur); if (n == null || n < 0) { mark($('cur'+i)); miss = true; } }
       if (miss) missingCards.push(i+1);
-      if (!a.ok) { mark($('cl'+i)); unticked.push(i+1); }
     });
-    if (missingCards.length) errs.push('Please fill in every box, including a figure (0 or more) for each year, in commitment ' + missingCards.join(', ') + '.');
-    if (unticked.length) errs.push('Please check and tick commitment ' + unticked.join(', ') + '.');
+    if (missingCards.length) errs.push('Please fill in every box, including a figure (0 or more) for each year and whether you already do it, in commitment ' + missingCards.join(', ') + '.');
+    if (unticked.length) errs.push('Please approve or decline commitment ' + unticked.join(', ') + '.');
     if (!F.name.trim()) { mark($('name')); errs.push('Add your name.'); }
     if (!F.title.trim()) { mark($('title')); errs.push('Add your job title.'); }
     if (!$('ok').checked) { mark($('okl')); errs.push('Tick the confirmation at the bottom.'); }
@@ -301,22 +342,25 @@ const SETTINGS = {
       if (blank) { added.push(LABELS[f]); return; }
       if (wasNorm !== now) changed.push(LABELS[f]);
     });
-    return { changed, added, label: changed.length ? 'Changed by client: ' + changed.join(', ') : (added.length ? 'Confirmed (client filled in the blanks)' : 'Confirmed as suggested') };
+    return { changed, added, label: changed.length ? 'Approved with changes: ' + changed.join(', ') : (added.length ? 'Approved (client filled in the blanks)' : 'Approved as suggested') };
   }
   function buildEmail(ref, at){
     const S = A.map((_, i) => status(i));
+    const OK = A.map((a, i) => i).filter(i => A[i].d === 'approve'), NO = A.map((a, i) => i).filter(i => A[i].d === 'decline');
     const data = {
       reference: ref, submitted_at: at, client: C.c, tender: C.t,
       anticipated_award: C.aw || '', contract_start: C.s, contract_end: C.e,
       contract_years: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, part_year: y.partial })),
-      commitments: A.map((a, i) => ({
-        order: i+1, commitment: a.n.trim(), unit: a.u.trim(),
+      commitments: OK.map(i => { const a = A[i]; return {
+        order: i+1, commitment: a.n.trim(), unit: a.u.trim(), expected_difference: a.im.trim(),
         yearly: Y.map((y, k) => ({ year: k+1, from: y.s, to: y.e, quantity: num(a.q[k]) })),
-        total: total(a), start_date: a.st, delivery_period: a.p.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
-        client_checked: true, status: S[i].label, filled_in_by_client: S[i].added
-      })),
+        total: total(a), start_date: a.st, delivery_period: a.p.trim(), delivery_approach: a.hw.trim(), responsible_person: a.r.trim(), evidence: a.ev.trim(),
+        existing_activity: EXOPT[a.ex], current_yearly_quantity: a.ex === 'more' ? num(a.cur) : null, comments: a.cm.trim(),
+        client_decision: 'Approved', status: S[i].label, filled_in_by_client: S[i].added
+      }; }),
+      declined_commitments: NO.map(i => ({ order: i+1, commitment: orig[i].n.trim() || A[i].n.trim() })),
       notes: F.notes.trim(), confirmed_by: { name: F.name.trim(), job_title: F.title.trim() },
-      confirmation: 'I confirm these commitments and yearly figures are realistic and agreed by our organisation.'
+      confirmation: 'I confirm the commitments I have approved, and their yearly figures, are realistic and agreed by our organisation.'
     };
     const td = 'style="border:1px solid #d6dfda;padding:6px 8px;vertical-align:top;font-size:13px"';
     const th = 'style="border:1px solid #d6dfda;padding:6px 8px;background:#e3ebe7;text-align:left;font-size:12px;vertical-align:bottom"';
@@ -327,20 +371,25 @@ const SETTINGS = {
     h += '<p style="margin:0 0 4px;font-size:13px">Contract ' + esc(fmt(C.s)) + ' to ' + esc(fmt(C.e)) + (C.aw ? ' · Expected award ' + esc(fmt(C.aw)) : '') + '</p>';
     h += '<p style="margin:0 0 14px;font-size:13px">Confirmed by ' + esc(F.name.trim()) + ', ' + esc(F.title.trim()) + ' · ' + esc(fmtStamp(at)) + ' · Ref ' + esc(ref) + '</p>';
     // Transfer table: one row per commitment, a column per contract year
-    h += '<h3 style="font-size:15px;margin:0 0 6px">Commitments and yearly figures</h3>';
-    h += '<table style="border-collapse:collapse;width:100%"><tr><th ' + th + '>#</th><th ' + th + '>Commitment</th><th ' + th + '>Unit</th>';
+    h += '<h3 style="font-size:15px;margin:0 0 6px">Approved commitments and yearly figures</h3>';
+    if (!OK.length) h += '<p style="margin:0;font-size:14px"><strong>The client did not approve any commitments.</strong></p>';
+    else {
+    h += '<table style="border-collapse:collapse;width:100%"><tr><th ' + th + '>#</th><th ' + th + '>Commitment</th><th ' + th + '>Unit</th><th ' + th + '>What difference it will make</th>';
     Y.forEach((y, k) => { h += '<th ' + th + '>Year ' + (k+1) + '<br><span style="font-weight:normal">' + esc(my(y.s)) + ' – ' + esc(my(y.e)) + (y.partial ? ' (part)' : '') + '</span></th>'; });
-    h += '<th ' + th + '>Total</th><th ' + th + '>Start</th><th ' + th + '>Delivery period</th><th ' + th + '>Responsible</th><th ' + th + '>Evidence</th><th ' + th + '>Status</th></tr>';
-    A.forEach((a, i) => {
-      h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '>' + esc(a.u.trim()) + '</td>';
+    h += '<th ' + th + '>Total</th><th ' + th + '>Start</th><th ' + th + '>Delivery period</th><th ' + th + '>How it will be delivered</th><th ' + th + '>Responsible</th><th ' + th + '>Evidence</th><th ' + th + '>Already done?</th><th ' + th + '>Comments</th><th ' + th + '>Status</th></tr>';
+    OK.forEach(i => { const a = A[i];
+      h += '<tr><td ' + td + '>' + (i+1) + '</td><td ' + td + '>' + esc(a.n.trim()) + '</td><td ' + td + '>' + esc(a.u.trim()) + '</td><td ' + td + '>' + esc(a.im.trim()).replace(/\n/g,'<br>') + '</td>';
       a.q.forEach(v => { h += '<td ' + tdn + '>' + esc(fmtNum(num(v))) + '</td>'; });
-      h += '<td ' + tdn + '><strong>' + esc(fmtNum(total(a))) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
+      h += '<td ' + tdn + '><strong>' + esc(fmtNum(total(a))) + '</strong></td><td ' + td + '>' + esc(fmt(a.st)) + '</td><td ' + td + '>' + esc(a.p.trim()) + '</td><td ' + td + '>' + esc(a.hw.trim()).replace(/\n/g,'<br>') + '</td><td ' + td + '>' + esc(a.r.trim()) + '</td><td ' + td + '>' + esc(a.ev.trim()).replace(/\n/g,'<br>') + '</td>';
+      h += '<td ' + td + '>' + esc(EXOPT[a.ex]) + (a.ex === 'more' ? '<br><strong>Currently ' + esc(fmtNum(num(a.cur))) + ' a year</strong>' : '') + '</td><td ' + td + '>' + esc(a.cm.trim()).replace(/\n/g,'<br>') + '</td>';
       const st = S[i];
       h += '<td ' + td + '>' + (st.changed.length ? '<strong style="color:#a2432f">' + esc(st.label) + '</strong>' : esc(st.label)) + (st.added.length ? '<br><span style="color:#5b6964">Filled in by client: ' + esc(st.added.join(', ')) + '</span>' : '') + '</td></tr>';
     });
     h += '</table>';
+    }
+    if (NO.length) h += '<h3 style="font-size:15px;margin:16px 0 6px">Declined by the client</h3><ul style="margin:0;padding-left:20px;font-size:14px">' + NO.map(i => '<li>' + (i+1) + '. ' + esc(orig[i].n.trim() || A[i].n.trim()) + '</li>').join('') + '</ul>';
     if (F.notes.trim()) h += '<h3 style="font-size:15px;margin:16px 0 6px">Client notes</h3><p style="margin:0;font-size:14px;white-space:pre-wrap">' + esc(F.notes.trim()) + '</p>';
-    h += '<p style="margin:16px 0 0;font-size:13px;background:#e3ebe7;padding:8px 10px;border-radius:6px">Each commitment was individually ticked as checked, and ' + esc(F.name.trim()) + ' confirmed: “' + esc(data.confirmation) + '”</p>';
+    h += '<p style="margin:16px 0 0;font-size:13px;background:#e3ebe7;padding:8px 10px;border-radius:6px">Each commitment was individually approved or declined, and ' + esc(F.name.trim()) + ' confirmed: “' + esc(data.confirmation) + '”</p>';
     const jsonPart = '<p style="font-size:12px;color:#5b6964;margin:14px 0 4px">Structured data (for ChatGPT or a spreadsheet):</p><pre style="font-size:11px;white-space:pre-wrap;background:#f3f6f4;padding:8px;border-radius:6px">' + esc(JSON.stringify(data, null, 1)) + '</pre>';
     return { data, main: h + '</div>', json: '<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2b27">' + jsonPart + '</div>', both: h + jsonPart + '</div>' };
   }
@@ -398,7 +447,7 @@ const SETTINGS = {
       <p>BidElevate will use them in the social value part of your tender.</p>
       <p class="muted small" style="margin-top:8px">Reference ${esc(ref)}</p>
       <button class="linkbtn small" type="button" id="again" style="margin-top:10px">Need to change something? Edit and send again</button></section>`;
-    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.ok = false); renderActs(); sentRef = null; save(); window.scrollTo({top:0}); };
+    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.d = ''); renderActs(); sentRef = null; save(); window.scrollTo({top:0}); };
     window.scrollTo({ top:0 });
   }
   if (sentRef && !sentRef.pending) done(sentRef.ref);
