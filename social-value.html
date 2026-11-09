@@ -331,7 +331,7 @@ const SETTINGS = {
       cm.value = a.cm; cm.addEventListener('input', () => { a.cm = cm.value; save(); });
       const body = sec.querySelector('#body'+i), rn = sec.querySelector('#rn'+i), dn = sec.querySelector('#dn'+i);
       const decs = sec.querySelectorAll('input[name="dec'+i+'"]');
-      const show = () => { decs.forEach(r => r.checked = r.value === a.d); body.hidden = a.d === 'decline'; dn.hidden = a.d !== 'decline'; if (a.d) rn.hidden = true; };
+      const show = () => { decs.forEach(r => r.checked = r.value === a.d); body.hidden = a.d === 'decline'; dn.hidden = a.d !== 'decline'; if (a.d) rn.hidden = true; fitAll(body); };
       decs.forEach(r => r.onchange = () => { a.d = r.value; $('cl'+i).classList.remove('bad'); show(); save(); });
       // Any change to an approved commitment needs approving again
       body.addEventListener('input', () => { if (a.d === 'approve') { a.d = ''; show(); rn.hidden = false; save(); } });
@@ -339,7 +339,15 @@ const SETTINGS = {
       wrap.appendChild(sec);
     });
   }
+
+  /* Multi-line boxes grow to show all their text, so bullet lists and paragraphs stay readable */
+  const fit = t => { if (!t || !t.offsetParent) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 520) + 'px'; t.style.overflowY = t.scrollHeight + 2 > 520 ? 'auto' : 'hidden'; };
+  const fitAll = root => (root || document).querySelectorAll('textarea').forEach(fit);
+  document.addEventListener('input', e => { if (e.target.tagName === 'TEXTAREA') fit(e.target); });
+  window.addEventListener('resize', () => fitAll());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());
   renderActs();
+  fitAll();
   ['notes','name','title'].forEach(id => { $(id).value = F[id] || ''; $(id).addEventListener('input', () => { F[id] = $(id).value; $(id).classList.remove('bad'); save(); }); });
   $('ok').onchange = () => $('okl').classList.remove('bad');
 
@@ -359,7 +367,7 @@ const SETTINGS = {
       const a = d && d.form === KEY ? cleanA(d.A) : null;
       if (!a) { alert("That file doesn't match this form. Please check it came from the same link."); return; }
       A = a; F = Object.assign({ name:'', title:'', notes:'' }, d.F || {});
-      renderActs(); ['notes','name','title'].forEach(id => $(id).value = F[id] || '');
+      renderActs(); ['notes','name','title'].forEach(id => $(id).value = F[id] || ''); fitAll();
       save(); alert('Answers loaded.');
     });
   };
@@ -506,7 +514,7 @@ const SETTINGS = {
       <p>BidElevate will use them in the social value part of your tender.</p>
       <p class="muted small" style="margin-top:8px">Reference ${esc(ref)}</p>
       <button class="linkbtn small" type="button" id="again" style="margin-top:10px">Need to change something? Edit and send again</button></section>`;
-    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.d = ''); renderActs(); sentRef = null; save(); window.scrollTo({top:0}); };
+    $('again').onclick = () => { v.hidden = true; $('formview').hidden = false; $('ok').checked = false; A.forEach(a => a.d = ''); renderActs(); fitAll(); sentRef = null; save(); window.scrollTo({top:0}); };
     window.scrollTo({ top:0 });
   }
   if (sentRef && !sentRef.pending) done(sentRef.ref);
