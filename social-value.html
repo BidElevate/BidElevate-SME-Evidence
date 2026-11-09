@@ -11,6 +11,7 @@
   --bg:#f3f6f4; --surface:#ffffff; --ink:#1f2b27; --muted:#5b6964; --line:#d6dfda;
   --brand:#3e554f; --brand-ink:#ffffff; --brand-soft:#e3ebe7; --field:#ffffff; --field-line:#b7c4bf;
   --danger:#a2432f; --danger-soft:#f7e3dd;
+  --ok-soft:#dcebe3; --ok-ink:#2c5a45; --todo-soft:#ece7dc; --todo-ink:#6b5a2e; --no-soft:#ebeeed;
   --display:"Lora",Georgia,serif;
   --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:light;
@@ -18,15 +19,16 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141a18; --surface:#1c2421; --ink:#e6ece9; --muted:#9caaa4; --line:#2f3b37;
   --brand:#8fb3a6; --brand-ink:#10201a; --brand-soft:#24332e; --field:#151c1a; --field-line:#3c4a45;
-  --danger:#ec8f7a; --danger-soft:#3a221d; color-scheme:dark}}
+  --danger:#ec8f7a; --danger-soft:#3a221d; --ok-soft:#1f3a2e; --ok-ink:#a8d5bd; --todo-soft:#3a331f; --todo-ink:#e0cf9c; --no-soft:#2a302e; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141a18; --surface:#1c2421; --ink:#e6ece9; --muted:#9caaa4; --line:#2f3b37;
   --brand:#8fb3a6; --brand-ink:#10201a; --brand-soft:#24332e; --field:#151c1a; --field-line:#3c4a45;
-  --danger:#ec8f7a; --danger-soft:#3a221d; color-scheme:dark}
+  --danger:#ec8f7a; --danger-soft:#3a221d; --ok-soft:#1f3a2e; --ok-ink:#a8d5bd; --todo-soft:#3a331f; --todo-ink:#e0cf9c; --no-soft:#2a302e; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-main{max-width:680px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
+main{max-width:1280px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
 .brandbar{font-family:var(--display);font-weight:600;color:var(--brand);font-size:1.15rem}
 h1{font-family:var(--display);font-size:1.5rem;margin:4px 0 6px;text-wrap:balance}
 h2{font-family:var(--display);font-size:1.15rem;margin:0 0 10px}
@@ -80,6 +82,47 @@ select.bad{border-color:var(--danger);background:var(--danger-soft)}
 .decision.bad{background:var(--danger-soft);color:var(--danger)}
 .renote{font-size:.88rem;color:var(--danger);font-weight:600}
 .guide{margin:0 0 2px}
+/* Option A layout: one open card, three columns on wide screens */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px}
+.topmain{flex:1 1 320px;min-width:0}
+.top .banner.due{flex:none}
+.introrow{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+.introrow .txt{flex:1 1 420px;min-width:0;max-width:860px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.pill.todo{background:var(--todo-soft);color:var(--todo-ink)}
+.pill.no{background:var(--no-soft);color:var(--muted)}
+section.card{padding:0;overflow:hidden}
+section.card.open{border:2px solid var(--brand)}
+.chead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:14px 18px}
+.card.open .chead{background:var(--brand-soft);border-bottom:1px solid var(--line)}
+.chead .cnum{margin:0;flex:none}
+.ctitle{font-family:var(--display);font-weight:600;font-size:1.05rem;flex:1 1 240px;min-width:0}
+.ctitle.struck{text-decoration:line-through;color:var(--muted)}
+.csum{color:var(--muted);font-size:.9rem}
+.cols{display:grid;grid-template-columns:minmax(0,1fr)}
+.col{padding:18px;min-width:0}
+.col + .col{border-top:1px solid var(--line)}
+.colhead{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin:0 0 12px}
+.dbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:14px 18px;border-top:1px solid var(--line);background:var(--bg)}
+.dbar.bad{background:var(--danger-soft)}
+.dq{font-weight:600;flex:1 1 220px}
+.dbar .renote{flex-basis:100%;order:3}
+.dbtns{display:flex;gap:10px;flex:1 1 260px;justify-content:flex-end}
+.dbtns .btn{flex:1 1 0;max-width:180px}
+.btn.decline{background:transparent;color:var(--danger);border-color:var(--danger)}
+.dnote{padding:16px 18px;color:var(--muted)}
+.signgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
+#send{width:100%;margin-top:14px}
+@media (min-width:960px){
+  .cols{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .col + .col{border-top:0;border-left:1px solid var(--line)}
+  .signgrid{grid-template-columns:1.4fr 1fr 1fr}
+  .signgrid .field{margin-bottom:14px}
+  #send{width:auto;min-width:320px;display:flex;margin-left:auto}
+}
+@media (max-width:560px){.dbtns .btn{max-width:none}}
 .confirm{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--brand-soft)}
 .confirm.bad{background:var(--danger-soft);color:var(--danger)}
 footer{color:var(--muted);font-size:.8rem;text-align:center}
@@ -212,28 +255,32 @@ const SETTINGS = {
   document.title = 'Social value commitments – ' + C.t + ' | BidElevate';
   const contractLine = 'Contract ' + fmt(C.s) + ' to ' + fmt(C.e) + (C.aw ? ' · Expected award ' + fmt(C.aw) : '');
   app.insertAdjacentHTML('beforeend', `
-    <section>
-      <p class="muted small"><span aria-hidden="true">🌿</span> Social value commitments</p>
-      <h1>${esc(C.t)}</h1>
-      <p class="muted">${esc(C.c)}</p>
-      <p class="muted small" style="margin-top:2px">${esc(contractLine)}</p>
-      ${C.d ? `<div class="banner due" style="margin-top:12px">Please send this back by ${esc(fmt(C.d))}</div>` : ''}
+    <section class="top">
+      <div class="topmain">
+        <p class="muted small"><span aria-hidden="true">🌿</span> Social value commitments · ${esc(C.c)}</p>
+        <h1>${esc(C.t)}</h1>
+        <p class="muted small">${esc(contractLine)}</p>
+      </div>
+      ${C.d ? `<div class="banner due">Please send this back by ${esc(fmt(C.d))}</div>` : ''}
     </section>
     <div id="formview" style="display:grid;gap:16px">
       <section>
         <p>These are the extra benefits your organisation would offer the local community through this contract, such as placements, volunteering or local jobs. We have suggested some, with figures for each contract year.</p>
-        <p style="margin-top:10px">Please check each one carefully. Change anything that isn't realistic for you, then approve it. If you don't want to offer one, decline it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
+        <div class="introrow" style="margin-top:10px">
+          <p class="txt">Work through each one: change anything that isn't realistic for you, then approve it, or decline it if you don't want to offer it. Only commit to what you are confident you can deliver and show evidence for, because these become promises in your tender.</p>
+          <div class="pills" id="pills" aria-live="polite"></div>
+        </div>
       </section>
       <div id="acts" style="display:grid;gap:16px"></div>
-      <section>
-        <div class="field"><label class="lab" for="notes">Anything we should know? <span class="opt">(optional)</span></label><textarea id="notes" placeholder="For example, another commitment you'd like to offer, or something you aren't sure about"></textarea></div>
-        <div class="two">
+      <section id="signoff">
+        <div class="signgrid">
+          <div class="field"><label class="lab" for="notes">Anything we should know? <span class="opt">(optional)</span></label><textarea id="notes" placeholder="For example, another commitment you'd like to offer, or something you aren't sure about"></textarea></div>
           <div class="field"><label class="lab" for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
           <div class="field"><label class="lab" for="title">Your job title</label><input type="text" id="title" autocomplete="organization-title"></div>
         </div>
         <label class="chk" id="okl"><input type="checkbox" id="ok"> I confirm the commitments I have approved, and their yearly figures, are realistic and agreed by our organisation.</label>
         <div id="err" class="banner error" hidden style="margin-top:12px"></div>
-        <button class="btn" type="button" id="send" style="width:100%;margin-top:14px">Send commitments to BidElevate</button>
+        <button class="btn" type="button" id="send">Send commitments to BidElevate</button>
         <p class="saved" id="savedat" style="margin-top:8px"></p>
       </section>
       <section>
@@ -251,14 +298,61 @@ const SETTINGS = {
     </div>
     <div id="doneview" hidden></div>`);
 
+  /* ---------- one open card at a time ---------- */
+  let openIdx = -1;
+  const qTotal = a => a.q.reduce((t, v) => t + (num(v) || 0), 0);
+  const PILL = { approve: ['Approved', 'ok'], decline: ['Declined', 'no'], '': ['To review', 'todo'] };
+  function counts(){
+    const n = { approve: 0, decline: 0, '': 0 }; A.forEach(a => n[a.d]++);
+    $('pills').innerHTML = `<span class="pill ok">${n.approve} approved</span><span class="pill todo">${n['']} to review</span>` + (n.decline ? `<span class="pill no">${n.decline} declined</span>` : '');
+  }
+  function paintHead(i){
+    const a = A[i], t = $('t'+i), pl = $('pl'+i), op = $('op'+i);
+    t.textContent = a.n.trim() || 'Commitment ' + (i+1);
+    t.classList.toggle('struck', a.d === 'decline');
+    pl.textContent = PILL[a.d][0]; pl.className = 'pill ' + PILL[a.d][1];
+    const shut = i !== openIdx;
+    $('sm'+i).textContent = shut && a.d !== 'decline' && a.q.some(v => num(v) != null) ? fmtQty(qTotal(a), a.u, true) + ' over the contract' : '';
+    op.hidden = !shut; op.textContent = a.d === 'decline' ? 'Change' : 'Open';
+  }
+  function setOpen(i, scroll){
+    openIdx = i;
+    A.forEach((_, j) => { $('cw'+j).hidden = j !== i; $('card'+j).classList.toggle('open', j === i); paintHead(j); });
+    counts();
+    if (i >= 0) { fitAll($('card'+i)); if (scroll) $('card'+i).scrollIntoView({ behavior:'smooth', block:'start' }); }
+  }
+  function advance(from){
+    let j = -1;
+    for (let s = 1; s <= A.length; s++) { const k = (from + s) % A.length; if (!A[k].d) { j = k; break; } }
+    setOpen(j, true);
+    if (j < 0) $('signoff').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  function cardMissing(i){
+    const a = A[i]; let first = null;
+    const mark = el => { el.classList.add('bad'); if (!first) first = el; };
+    FIELDS.forEach(f => { if (f === 'g') return; if (!String(a[f]).trim()) mark(f === 'u' ? $(a.uo ? 'uc'+i : 'u'+i) : $(f+i)); });
+    a.q.forEach((v, k) => { const n = num(v); if (n == null || n < 0) mark($('q'+i+'_'+k)); });
+    if (!a.ex) mark($('ex'+i));
+    if (a.ex === 'more') { const n = num(a.cur); if (n == null || n < 0) mark($('cur'+i)); }
+    return first;
+  }
+
   function renderActs(){
     const wrap = $('acts'); wrap.innerHTML = '';
     A.forEach((a, i) => {
       const sec = document.createElement('section');
-      sec.id = 'card' + i;
+      sec.id = 'card' + i; sec.className = 'card';
       sec.innerHTML = `
-        <div class="cnum">Commitment ${i+1} of ${A.length}</div>
-        <div id="body${i}">
+        <div class="chead">
+          <span class="cnum">Commitment ${i+1} of ${A.length}</span>
+          <span class="ctitle" id="t${i}"></span>
+          <span class="csum" id="sm${i}"></span>
+          <span class="pill" id="pl${i}"></span>
+          <button class="linkbtn" type="button" id="op${i}">Open</button>
+        </div>
+        <div id="cw${i}">
+        <div id="body${i}" class="cols">
+        <div class="col"><p class="colhead">The proposal</p>
         <div class="field"><label class="lab" for="n${i}">What are we proposing?</label><textarea id="n${i}" data-f="n" style="min-height:60px"></textarea></div>
         ${orig[i].g ? `<div class="field"><label class="lab" for="g${i}">What will this involve?</label>
           <p class="muted small guide">What this would mean for your organisation day to day. Change anything that isn't right for you.</p>
@@ -269,6 +363,8 @@ const SETTINGS = {
         <div class="field"><label class="lab" for="im${i}">What difference will this make?</label>
           <p class="muted small guide">${orig[i].im ? "We've suggested the expected benefits of this activity. Please check they are realistic and amend them if needed." : 'Describe the benefits for local people or the community.'}</p>
           <textarea id="im${i}" data-f="im"></textarea></div>
+        </div>
+        <div class="col"><p class="colhead">Numbers and timing</p>
         <div class="field"><label class="lab" for="u${i}">What is being counted?</label>${unitSelect('u'+i, a)}<input type="text" id="uc${i}" placeholder="Type what is being counted" ${a.uo ? '' : 'hidden'}></div>
         <div class="field">
           <span class="lab">How many each contract year?</span>
@@ -283,6 +379,8 @@ const SETTINGS = {
           <div class="field"><label class="lab" for="st${i}">When will it start?</label><input type="date" id="st${i}" data-f="st"></div>
           <div class="field"><label class="lab" for="p${i}">How often or over what period?</label><input type="text" id="p${i}" data-f="p" placeholder="For example, each academic year"></div>
         </div>
+        </div>
+        <div class="col"><p class="colhead">Responsibility and evidence</p>
         <div class="field"><label class="lab" for="r${i}">Who will make sure it happens?</label><input type="text" id="r${i}" data-f="r" placeholder="Name and job title"></div>
         <div class="field"><label class="lab" for="ev${i}">How will you show it was done?</label><textarea id="ev${i}" data-f="ev" placeholder="For example, placement agreements, timesheets, photos, thank-you letters"></textarea></div>
         <div class="field"><span class="lab" id="exl${i}">Is this something your organisation already does?</span>
@@ -292,12 +390,19 @@ const SETTINGS = {
         <div class="field" id="curw${i}" hidden><label class="lab" for="cur${i}">What quantity do you currently deliver each year?</label><input type="number" min="0" step="any" inputmode="decimal" id="cur${i}" style="max-width:200px"></div>
         <div class="field"><label class="lab" for="cm${i}">Additional comments or delivery considerations <span class="opt">(optional)</span></label><textarea id="cm${i}"></textarea></div>
         </div>
-        <div class="decision" id="cl${i}" role="radiogroup" aria-label="Your decision on commitment ${i+1}">
-          <label class="chk"><input type="radio" name="dec${i}" value="approve"> Approve this commitment, including any changes I've made</label>
-          <label class="chk"><input type="radio" name="dec${i}" value="decline"> Decline this commitment. We don't want to offer it.</label>
+        </div>
+        <p class="dnote" id="dn${i}" hidden>You've declined this commitment, so there's nothing to fill in. <button class="linkbtn" type="button" id="rc${i}">Reconsider it</button></p>
+        <div class="dbar" id="cl${i}">
+          <span class="dq">Your decision on this commitment</span>
+          <div class="dbtns">
+            <button class="btn" type="button" id="ap${i}">Approve</button>
+            <button class="btn decline" type="button" id="de${i}">Decline</button>
+          </div>
           <p class="renote" id="rn${i}" hidden>You've changed this commitment, so please approve it again.</p>
-          <p class="muted small" id="dn${i}" hidden>Declined. You don't need to fill in this commitment. Choose Approve if you change your mind.</p>
+          <p class="renote" id="ce${i}" hidden>Please fill in the highlighted boxes before approving.</p>
+        </div>
         </div>`;
+      wrap.appendChild(sec);
       const unitHead = sec.querySelector('[data-unit]');
       sec.querySelectorAll('[data-f]').forEach(inp => {
         const f = inp.dataset.f; inp.value = a[f];
@@ -329,15 +434,23 @@ const SETTINGS = {
       curw.hidden = a.ex !== 'more';
       cur.value = a.cur; cur.addEventListener('input', () => { a.cur = cur.value; cur.classList.remove('bad'); save(); });
       cm.value = a.cm; cm.addEventListener('input', () => { a.cm = cm.value; save(); });
-      const body = sec.querySelector('#body'+i), rn = sec.querySelector('#rn'+i), dn = sec.querySelector('#dn'+i);
-      const decs = sec.querySelectorAll('input[name="dec'+i+'"]');
-      const show = () => { decs.forEach(r => r.checked = r.value === a.d); body.hidden = a.d === 'decline'; dn.hidden = a.d !== 'decline'; if (a.d) rn.hidden = true; fitAll(body); };
-      decs.forEach(r => r.onchange = () => { a.d = r.value; $('cl'+i).classList.remove('bad'); show(); save(); });
+      const body = sec.querySelector('#body'+i), rn = sec.querySelector('#rn'+i), dn = sec.querySelector('#dn'+i), ce = sec.querySelector('#ce'+i);
+      const bar = sec.querySelector('#cl'+i);
+      const show = () => { body.hidden = a.d === 'decline'; dn.hidden = a.d !== 'decline'; bar.hidden = a.d === 'decline'; if (a.d) rn.hidden = true; paintHead(i); counts(); fitAll(body); };
+      sec.querySelector('#ap'+i).onclick = () => {
+        sec.querySelectorAll('.bad').forEach(el => el.classList.remove('bad'));
+        const miss = cardMissing(i);
+        if (miss) { ce.hidden = false; miss.scrollIntoView({ behavior:'smooth', block:'center' }); if (miss.tagName !== 'DIV') setTimeout(() => miss.focus({ preventScroll:true }), 350); return; }
+        ce.hidden = true; a.d = 'approve'; save(); show(); advance(i);
+      };
+      sec.querySelector('#de'+i).onclick = () => { a.d = 'decline'; ce.hidden = true; bar.classList.remove('bad'); save(); show(); advance(i); };
+      sec.querySelector('#rc'+i).onclick = () => { a.d = ''; save(); show(); fitAll(body); };
+      sec.querySelector('#op'+i).onclick = () => setOpen(i, true);
       // Any change to an approved commitment needs approving again
-      body.addEventListener('input', () => { if (a.d === 'approve') { a.d = ''; show(); rn.hidden = false; save(); } });
+      body.addEventListener('input', () => { if (a.d === 'approve') { a.d = ''; show(); rn.hidden = false; save(); } else paintHead(i); });
       show();
-      wrap.appendChild(sec);
     });
+    setOpen(A.findIndex(x => !x.d), false);
   }
 
   /* Multi-line boxes grow to show all their text, so bullet lists and paragraphs stay readable */
@@ -374,24 +487,23 @@ const SETTINGS = {
 
   /* ---------- checks ---------- */
   function validate(){
-    const errs = []; let first = null;
+    const errs = []; let first = null, pi = -1, pEl = null;
     const mark = el => { el.classList.add('bad'); if (!first) first = el; };
     const missingCards = [], unticked = [];
     A.forEach((a, i) => {
       if (a.d === 'decline') return;
-      if (!a.d) { mark($('cl'+i)); unticked.push(i+1); }
-      let miss = false;
-      FIELDS.forEach(f => { if (f === 'g') return; if (!String(a[f]).trim()) { mark(f === 'u' ? $(a.uo ? 'uc'+i : 'u'+i) : $(f+i)); miss = true; } });
-      a.q.forEach((v, k) => { const n = num(v); if (n == null || n < 0) { mark($('q'+i+'_'+k)); miss = true; } });
-      if (!a.ex) { mark($('ex'+i)); miss = true; }
-      if (a.ex === 'more') { const n = num(a.cur); if (n == null || n < 0) { mark($('cur'+i)); miss = true; } }
+      const miss = cardMissing(i);
       if (miss) missingCards.push(i+1);
+      if (!a.d) { $('cl'+i).classList.add('bad'); unticked.push(i+1); }
+      if (pi < 0 && (miss || !a.d)) { pi = i; pEl = miss || $('cl'+i); }
     });
     if (missingCards.length) errs.push('Please fill in every box, including a figure (0 or more) for each year and whether you already do it, in commitment ' + missingCards.join(', ') + '.');
     if (unticked.length) errs.push('Please approve or decline commitment ' + unticked.join(', ') + '.');
     if (!F.name.trim()) { mark($('name')); errs.push('Add your name.'); }
     if (!F.title.trim()) { mark($('title')); errs.push('Add your job title.'); }
     if (!$('ok').checked) { mark($('okl')); errs.push('Tick the confirmation at the bottom.'); }
+    // Open the first commitment that needs attention and point to it
+    if (pi >= 0) { setOpen(pi, false); first = pEl; if (pEl !== $('cl'+pi)) $('ce'+pi).hidden = false; }
     return { errs, first };
   }
 
